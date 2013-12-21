@@ -15,3 +15,14 @@ testShowAstNum = do
     assertShown "-10" (Num (-10))
     assertShown "2014" (Num 2014)
 
+    
+    
+--QuickCheck properties
+
+instance Arbitrary SchemeAst where
+    arbitrary = do
+        n <- choose (-100, 100) :: Gen Int
+        return $ Num n
+
+prop_showAst :: SchemeAst -> Bool
+prop_showAst (Num n) = show n == show (Num n)
