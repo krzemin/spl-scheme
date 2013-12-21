@@ -11,5 +11,5 @@ instance Show SchemeAst where
   show (Atom x) = x
   show (Str s) = "\"" ++ s ++ "\""
   show (List []) = "()"
-  show (List (x:xs)) = (foldl (\acc y -> acc ++ " " ++ show y) ("(" ++ show x) xs) ++ ")" 
+  show (List (x:xs)) = foldl (\acc y -> acc ++ ' ' : show y) ('(' : show x) xs ++ ")" 
 
