@@ -21,9 +21,10 @@ testShowAstNum = do
 --QuickCheck properties
 
 instance Arbitrary SchemeAst where
-  arbitrary     = do
-      n <- choose (-100, 100) :: Gen Int
-      return $ Num n
+    arbitrary = do
+        n <- choose (-100, 100) :: Gen Int
+        return $ Num n
 
-prop_showAstNum (Num n) = (show n) == (show $ Num n)
+prop_showAst :: SchemeAst -> Bool
+prop_showAst (Num n) = show n == show (Num n)
     
