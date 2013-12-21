@@ -15,9 +15,6 @@ testShowAstNum = do
 
     
     
-    
-    
-    
 --QuickCheck properties
 
 instance Arbitrary SchemeAst where
@@ -27,4 +24,3 @@ instance Arbitrary SchemeAst where
 
 prop_showAst :: SchemeAst -> Bool
 prop_showAst (Num n) = show n == show (Num n)
-    
