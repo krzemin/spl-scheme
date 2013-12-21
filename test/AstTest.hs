@@ -4,4 +4,13 @@ module AstTest where
 import Test.Framework
 import Ast
 
-test_nothing = assertEqual "0" (show (Num 0))
+assertShown s x = assertEqual s (show x)
+
+testShowAstNum = do
+    assertShown "0" (Num 0)
+    assertShown "-10" (Num (-10))
+    assertShown "2014" (Num 2014)
+
+    
+    
+    
