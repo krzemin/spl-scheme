@@ -4,8 +4,10 @@ module AstTest where
 import Test.Framework
 import Ast
 
+assertShown :: String -> SchemeAst -> IO ()
 assertShown s x = assertEqual s (show x)
 
+testShowAstNum :: IO ()
 testShowAstNum = do
     assertShown "0" (Num 0)
     assertShown "-10" (Num (-10))
@@ -13,4 +15,15 @@ testShowAstNum = do
 
     
     
+    
+    
+    
+--QuickCheck properties
+
+instance Arbitrary SchemeAst where
+  arbitrary     = do
+      n <- choose (-100, 100) :: Gen Int
+      return $ Num n
+
+prop_showAstNum (Num n) = (show n) == (show $ Num n)
     
