@@ -2,7 +2,6 @@ name:           spl-scheme
 version:        0.1.0.0
 synopsis:       Mini implementation of Scheme language written in Haskell
 homepage:       https://github.com/krzemin/spl-scheme
-license-file:   LICENSE
 author:         Piotr Krzemiński, Błażej Saladra
 maintainer:     pio.krzeminski@gmail.com
 category:       Language
@@ -12,12 +11,12 @@ cabal-version:  >=1.8
 executable spl-scheme
   build-depends:  base >= 4
   hs-source-dirs: src
-  ghc-options:    -Wall -rtsopts
+  ghc-options:    -Wall -rtsopts  -main-is InterpretMain
   main-is:        InterpretMain.hs
 
 executable spl-scheme-repl
   build-depends:   base >= 4
   hs-source-dirs:  src
-  ghc-options:     -Wall -rtsopts
+  ghc-options:     -Wall -rtsopts -main-is Repl
   main-is:         Repl.hs
 
