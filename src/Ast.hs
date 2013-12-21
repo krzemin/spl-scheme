@@ -1,14 +1,13 @@
 module Ast where
 
-
-data SchemeAst = Number Int
+data SchemeAst = Num Int
                | Atom String
                | Str String
                | List [SchemeAst]
                deriving (Eq)
 
 instance Show SchemeAst where
-  show (Number n) = show n
+  show (Num n) = show n
   show (Atom x) = x
   show (Str s) = "\"" ++ s ++ "\""
   show (List []) = "()"
