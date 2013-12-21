@@ -2,12 +2,14 @@
 module AstTest where
 
 import Test.Framework
+import Test.Framework.TestTypes (Assertion)
+
 import Ast
 
-assertShown :: String -> SchemeAst -> IO ()
+assertShown :: String -> SchemeAst -> Assertion
 assertShown s x = assertEqual s (show x)
 
-testShowAstNum :: IO ()
+testShowAstNum :: Assertion
 testShowAstNum = do
     assertShown "0" (Num 0)
     assertShown "-10" (Num (-10))

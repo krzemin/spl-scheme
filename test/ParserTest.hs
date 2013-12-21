@@ -3,7 +3,8 @@ module ParserTest where
 import Parser
 
 import Test.Framework
+import Test.Framework.TestTypes (Assertion)
 
-testSomething :: IO ()
+testSomething :: Assertion
 testSomething = assertEqual "1" (show 11)
 
