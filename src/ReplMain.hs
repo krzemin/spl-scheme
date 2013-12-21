@@ -1,4 +1,4 @@
-module Repl where
+module ReplMain where
 
 
 main :: IO ()
