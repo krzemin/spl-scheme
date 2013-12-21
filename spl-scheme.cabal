@@ -17,6 +17,6 @@ executable spl-scheme
 executable spl-scheme-repl
   build-depends:   base >= 4
   hs-source-dirs:  src
-  ghc-options:     -Wall -rtsopts -main-is Repl
-  main-is:         Repl.hs
+  ghc-options:     -Wall -rtsopts -main-is ReplMain
+  main-is:         ReplMain.hs
 
