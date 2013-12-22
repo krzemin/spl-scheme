@@ -1,6 +1,5 @@
 {-# OPTIONS_GHC -F -pgmF htfpp #-}
-module Main where
-
+module AstTestSuite where
 
 import Test.Framework
 

@@ -1,15 +1,18 @@
 module Ast where
 
-data SchemeAst = Num Int
+data SchemeAst = Number Int
+               | Bool Bool
                | Atom String
-               | Str String
+               | String String
                | List [SchemeAst]
                deriving (Eq)
 
 instance Show SchemeAst where
-  show (Num n) = show n
-  show (Atom x) = x
-  show (Str s) = "\"" ++ s ++ "\""
-  show (List []) = "()"
-  show (List (x:xs)) = foldl (\acc y -> acc ++ ' ' : show y) ('(' : show x) xs ++ ")" 
+    show (Number n) = show n
+    show (Bool True) = "#t"
+    show (Bool False) = "#f"
+    show (Atom x) = x
+    show (String s) = "\"" ++ s ++ "\""
+    show (List []) = "()"
+    show (List (x:xs)) = foldl (\acc y -> acc ++ ' ' : show y) ('(' : show x) xs ++ ")"
 
