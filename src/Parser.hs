@@ -15,17 +15,8 @@ parseString = do
     char '"'
     return $ String x
 
-positiveNumber :: Parser SchemeAst
-positiveNumber = liftM (Number . read) $ many1 digit
-
-negativeNumber :: Parser SchemeAst
-negativeNumber = do
-    char '-'
-    Number n <- positiveNumber
-    return (Number (-n))
-
 parseNumber :: Parser SchemeAst
-parseNumber = negativeNumber <|> positiveNumber
+parseNumber = liftM (Number . read) $ many1 digit
 
 parseAtom :: Parser SchemeAst
 parseAtom = do

@@ -24,8 +24,8 @@ test_number = do
     parsedOk (Number 5) "5  "
     parsedOk (Number 5) "  5 "
     parsedOk (Number 5) "  5 "
-    parsedOk (Number (-1585)) "-1585"
-    parsedOk (Number (-1585)) "  -1585   "
+    parsedOk (Number (1585)) "1585"
+    parsedOk (Number (1585)) "  1585   "
 
 test_bool :: Assertion
 test_bool = do
@@ -71,5 +71,6 @@ test_list = do
     let twice_plus_2_3 = List [Atom "twice", plus_2_3]
     parsedOk twice_plus_2_3 "(twice (+ 2 3))"
     parsedOk twice_plus_2_3 " ( twice   ( +   2  3 ) ) "
+    parsedOk (List [Atom "-", Number 5]) "(- 5)"
     
 
