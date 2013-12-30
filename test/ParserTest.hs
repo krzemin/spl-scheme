@@ -2,7 +2,7 @@
 module ParserTest where
 
 import           Ast
-import           Parser                   (parseScheme)
+import           Parser
 import           Test.Framework
 import           Test.Framework.TestTypes (Assertion)
 
@@ -73,4 +73,8 @@ test_list = do
     parsedOk twice_plus_2_3 " ( twice   ( +   2  3 ) ) "
     parsedOk (List [Atom "-", Number 5]) "(- 5)"
     
+test_file_contents :: Assertion
+test_file_contents = do
+    assertEqual (Right [List [Atom "a"], List [Atom "b", Number 3]]) (parseFileContent "(a) (b 3)")
+
 

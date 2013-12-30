@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
-module Parser (parseScheme) where
+module Parser (parseFileContent, parseScheme) where
 
 import           Ast
 import           Control.Monad                 (liftM)
@@ -46,6 +46,10 @@ parseExpr = do
     spaces
     return y
 
+parseFileContent :: String -> Either String [SchemeAst]
+parseFileContent input = case parse (many parseExpr) "" input of
+        Left err -> Left (show err)
+        Right ast -> Right ast
 
 parseScheme :: String -> Either String SchemeAst
 parseScheme "" = Left "empty input"
