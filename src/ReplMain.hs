@@ -1,9 +1,21 @@
 module ReplMain where
 
-import Ast
+import System.IO
+import Parser
 
 main :: IO ()
 main = do
-    putStrLn "Hello in spl-scheme REPL"
-    print $ List [Atom "+", Num 5, List [Atom "*", Num 3, Num 7], Atom "x"]
-
+    putStrLn "Welcome to spl-scheme REPL!"
+    loop
+   
+loop :: IO ()
+loop = do
+    putStr "> "
+    hFlush stdout
+    line <- getLine
+    case parseScheme line of
+        Right ast -> do
+            print ast
+            loop
+        Left err ->
+            putStrLn err
