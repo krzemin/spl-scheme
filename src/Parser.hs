@@ -1,42 +1,44 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 module Parser (parseFileContent, parseScheme) where
 
-import           Ast
+import           Expr
 import           Control.Monad                 (liftM)
 import           Text.ParserCombinators.Parsec
 
 symbol :: Parser Char
 symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
 
-parseString :: Parser SchemeAst
-parseString = do
+parseStr :: Parser Expr
+parseStr = do
     char '"'
     x <- many $ noneOf "\""
     char '"'
-    return $ String x
+    return $ Str x
 
-parseNumber :: Parser SchemeAst
-parseNumber = liftM (Number . read) $ many1 digit
+parseNum :: Parser Expr
+parseNum = liftM (Num . read) $ many1 digit
 
-parseAtom :: Parser SchemeAst
+parseAtom :: Parser Expr
 parseAtom = do
     first <- letter <|> symbol
     rest <- many (letter <|> digit <|> symbol)
     let atom = first:rest
     return $ case atom of
         "#t" -> Bool True
+        "true" -> Bool True
         "#f" -> Bool False
+        "false" -> Bool False
         _    -> Atom atom
 
-parseList :: Parser SchemeAst
+parseList :: Parser Expr
 parseList = liftM List $ sepBy parseExpr spaces
 
-parseExpr :: Parser SchemeAst
+parseExpr :: Parser Expr
 parseExpr = do
     spaces
-    y <- parseNumber
+    y <- parseNum
         <|> parseAtom
-        <|> parseString
+        <|> parseStr
         <|> do
             char '('
             spaces
@@ -46,12 +48,12 @@ parseExpr = do
     spaces
     return y
 
-parseFileContent :: String -> Either String [SchemeAst]
+parseFileContent :: String -> Either String [Expr]
 parseFileContent input = case parse (many parseExpr) "" input of
         Left err -> Left (show err)
         Right ast -> Right ast
 
-parseScheme :: String -> Either String SchemeAst
+parseScheme :: String -> Either String Expr
 parseScheme "" = Left "empty input"
 parseScheme input =
     case parse parseExpr "" input of
