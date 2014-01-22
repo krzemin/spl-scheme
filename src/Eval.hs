@@ -7,6 +7,7 @@ import  Data.Map hiding (foldl)
 data Val = OK Expr | Err String | TypeErr String
 type Env = Map String Expr
 type Cont = Expr -> Val
+type TypedCont repr = repr -> Val
 
 evalExpr :: Expr -> Cont -> Env -> Val
 evalExpr (Num n) k _ = k $ Num n
@@ -19,39 +20,61 @@ evalExpr (List ls) k env = evalList ls k env
 
 evalList :: [Expr] -> Cont -> Env -> Val
 evalList (Atom "+" : e0 : e1 : []) k env = evalExpr e0 k' env where
-  k' (Num n0) = evalExpr e1 k'' env
-    where
-      k'' (Num n1) = k $ Num (n0 + n1)
-      k'' v1 = Err $ "Expected number instead of " ++ show v1
-  k' v0 = Err $ "Expected number instead of " ++ show v0
+  k' = typedCont numType (\n0 -> evalExpr e1 (k'' n0) env)
+  k'' n0 = typedCont numType (\n1 -> k $ Num (n0 + n1))
+
+evalTyped :: TypeDef repr -> Expr -> TypedCont a -> Env -> Val
+evalTyped t e k env = let reprE = (toRepr t) e in k reprE
+
+--evalList (Atom "-" : e0 : e1 : []) k env = do
+--  n0 <- evalTyped numType e0 env
+--  n1 <- evalTyped numType e1 env
+--  k $ Num $ n0 + n1
 
 
-evalList (Atom "not" : e : []) k env = evalExpr e k' env where
-  k' = typedCont boolType (\v -> k $ Bool $ not v)
+--evalList (Atom "*" : e0 : e1 : []) k env =
+--  evalTyped numType e0 env >>= (\n0 ->
+--    evalTyped numType e1 env >>= (\n1 ->
+--      k $ Num $ n0 + n1
+--    )
+--  )
 
 
 
-evalList ls _ _ = Err $ "Sorry. This is not valid SPL-Scheme expression:\n" ++ show (List ls)
+
+--instance Monad TypedCont where
+--  return :: repr -> TypedCont repr
+--  return v = OK $ fromRepr v
+--  >>= :: TypedCont reprA -> (reprA -> TypedCont reprB) -> TypedCont reprB
+--  f >>= g = g f 
+
+
+--evalList (Atom "not" : e : []) k env = evalExpr e k' env where
+--  k' = typedCont boolType (\v -> k $ Bool $ not v)
+
+
+--evalList ls _ _ = Err $ "Sorry. This is not valid SPL-Scheme expression:\n" ++ show (List ls)
 
 
 data TypeDef repr = TypeDef {
   name :: String,
-  extractRepr :: Expr -> Maybe repr
+  toRepr :: Expr -> Maybe repr,
+  fromRepr :: repr -> Expr
 } 
 
-typedCont :: TypeDef repr -> (repr -> Val) -> Expr -> Val
-typedCont t k e = case (extractRepr t) e of
+typedCont :: TypeDef repr -> TypedCont repr -> Expr -> Val
+typedCont t k e = case (toRepr t) e of
   Just v -> k v
   Nothing -> TypeErr $ "Expected type `" ++ name t ++ "`, but given " ++ show e 
 
 
 numType :: TypeDef Int
-numType = TypeDef "int" exFun where
+numType = TypeDef "int" exFun Num where
   exFun (Num n) = Just n
   exFun _ = Nothing
 
 boolType :: TypeDef Bool
-boolType = TypeDef "bool" exFun where
+boolType = TypeDef "bool" exFun Bool where
   exFun (Bool b) = Just b
   exFun _ = Nothing
 
