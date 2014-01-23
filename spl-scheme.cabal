@@ -20,6 +20,8 @@ executable spl-scheme
                    Parser,
                    Eval,
                    Expr
+                   Sugar,
+                   Types
 
 executable spl-scheme-repl
   build-depends:   
@@ -32,4 +34,6 @@ executable spl-scheme-repl
   other-modules:   
                    Parser,
                    Eval,
-                   Expr
+                   Expr,
+                   Sugar,
+                   Types
