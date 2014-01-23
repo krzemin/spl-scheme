@@ -24,11 +24,11 @@ parseAtom = do
     rest <- many (letter <|> digit <|> symbol)
     let atom = first:rest
     return $ case atom of
-        "#t" -> Bool True
-        "true" -> Bool True
-        "#f" -> Bool False
+        "#t"    -> Bool True
+        "true"  -> Bool True
+        "#f"    -> Bool False
         "false" -> Bool False
-        _    -> Atom atom
+        _       -> Atom atom
 
 parseList :: Parser Expr
 parseList = liftM List $ sepBy parseExpr spaces
