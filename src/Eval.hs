@@ -59,7 +59,7 @@ evalList (Atom "*" : e0 : e1 : []) k env = do
   let n0 = extractVal numType v0
   v1 <- evalTyped numType e1 env
   let n1 = extractVal numType v1
-  k $ Num (n0 + n1)
+  k $ Num (n0 * n1)
 
 evalList (Atom "/" : e0 : e1 : []) k env = do
   v0 <- evalTyped numType e0 env
@@ -88,7 +88,7 @@ evalList (Atom "cond" : b : e0 : e1 : []) k env = do
 evalList (Atom "quote" : e : []) k _ = k e
 
 evalList ls _ _ =
-  Err $ "Sorry. This is not valid SPL-Scheme expression:\n" ++ show (List ls)
+  Err $ "Sorry. This is not valid SPL-Scheme expressbion:\n" ++ show (List ls)
 
 
 eval :: Expr -> Val Expr
