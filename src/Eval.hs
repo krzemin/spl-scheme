@@ -3,6 +3,7 @@ module Eval where
 import Prelude hiding (lookup)
 import Expr
 import Types
+import Sugar
 import Data.Map hiding (foldl)
 
 
@@ -89,4 +90,4 @@ evalList ls _ _ =
 
 
 eval :: Expr -> Val Expr
-eval e = evalExpr e OK empty
+eval e = evalExpr (desugar e) OK empty
