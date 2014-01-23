@@ -1,8 +1,9 @@
 module ReplMain where
 
+import System.Console.Readline
 import Parser
 import Eval
-import System.Console.Readline
+import Sugar
 
 main :: IO ()
 main = do
@@ -19,6 +20,7 @@ repl = do
       addHistory line
       case parseScheme line of
         Right expr -> do
+          putStrLn $ "Desugared expr:\n  " ++ show (desugar expr)
           case eval expr of
             OK e -> print e
             Err s -> putStrLn $ "Runtime error: " ++ s
