@@ -20,9 +20,11 @@ instance Monad Val where
 
 
 evalTyped :: TypeDef repr -> Expr -> Env -> Val Expr
-evalTyped t e env = case (toRepr t) e of 
-  Just _ -> evalExpr e OK env
-  Nothing -> TypeErr $ "Expected type `" ++ name t ++ "`, but given " ++ show e 
+evalTyped t e env = do
+  v <- evalExpr e OK env
+  case (toRepr t) v of 
+    Just _ -> return v
+    Nothing -> TypeErr $ "Expected type `" ++ name t ++ "`, but given " ++ show e 
 
 
 evalExpr :: Expr -> Cont -> Env -> Val Expr
