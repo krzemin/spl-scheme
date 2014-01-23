@@ -88,7 +88,7 @@ evalList (Atom "cond" : b : e0 : e1 : []) k env = do
 evalList (Atom "quote" : e : []) k _ = k e
 
 evalList ls _ _ =
-  Err $ "Sorry. This is not valid SPL-Scheme expressbion:\n" ++ show (List ls)
+  Err $ "Sorry. This is not valid SPL-Scheme expression:\n" ++ show (List ls)
 
 
 eval :: Expr -> Val Expr
