@@ -25,9 +25,7 @@ parseAtom = do
     let atom = first:rest
     return $ case atom of
         "#t"    -> Bool True
-        "true"  -> Bool True
         "#f"    -> Bool False
-        "false" -> Bool False
         _       -> Atom atom
 
 parseList :: Parser Expr
