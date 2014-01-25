@@ -43,3 +43,4 @@ funType :: TypeDef [Expr]
 funType = TypeDef "fun" exFun List where
   exFun (List ls@[Atom "lambda", _, _]) = Just ls
   exFun _ = Nothing
+  

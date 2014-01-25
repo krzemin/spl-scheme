@@ -40,52 +40,67 @@ evalExpr (List ls) k env = evalList ls k env
 
 evalList :: [Expr] -> Cont -> Env -> Val Expr
 
-evalList (Atom "+" : e0 : e1 : []) k env = do
+evalList [Atom "+", e0, e1] k env = do
   v0 <- evalTyped numType e0 env
   let n0 = extractVal numType v0
   v1 <- evalTyped numType e1 env
   let n1 = extractVal numType v1
   k $ Num (n0 + n1)
 
-evalList (Atom "-" : e0 : e1 : []) k env = do
+evalList [Atom "-", e0, e1] k env = do
   v0 <- evalTyped numType e0 env
   let n0 = extractVal numType v0
   v1 <- evalTyped numType e1 env
   let n1 = extractVal numType v1
   k $ Num (n0 - n1)
 
-evalList (Atom "*" : e0 : e1 : []) k env = do
+evalList [Atom "*", e0, e1] k env = do
   v0 <- evalTyped numType e0 env
   let n0 = extractVal numType v0
   v1 <- evalTyped numType e1 env
   let n1 = extractVal numType v1
   k $ Num (n0 * n1)
 
-evalList (Atom "/" : e0 : e1 : []) k env = do
+evalList [Atom "/", e0, e1] k env = do
   v0 <- evalTyped numType e0 env
   let n0 = extractVal numType v0
   v1 <- evalTyped numType e1 env
   let n1 = extractVal numType v1
   if n1 == 0 then Err "Division by zero." else k $ Num (n0 `div` n1)
 
-evalList (Atom "%" : e0 : e1 : []) k env = do
+evalList [Atom "%", e0, e1] k env = do
   v0 <- evalTyped numType e0 env
   let n0 = extractVal numType v0
   v1 <- evalTyped numType e1 env
   let n1 = extractVal numType v1
   if n1 == 0 then Err "Division by zero." else k $ Num (n0 `mod` n1)
 
-evalList (Atom "not" : e : []) k env = do
+evalList [Atom "not", e] k env = do
   v <- evalTyped boolType e env
   let b = extractVal boolType v
   k $ Bool (not b)
 
-evalList (Atom "cond" : b : e0 : e1 : []) k env = do
+evalList [Atom "cond", b, e0, e1] k env = do
   v <- evalTyped boolType b env
   let r = extractVal boolType v
   if r then evalExpr e0 k env else evalExpr e1 k env
 
-evalList (Atom "quote" : e : []) k _ = k e
+evalList [Atom "cons", e0, e1] k env = do
+  v0 <- evalExpr e0 OK env
+  v1 <- evalExpr e1 OK env
+  k $ List [Atom "cons", v0, v1]
+
+evalList [Atom "car", e] k env = do
+  v <- evalTyped consType e env
+  let [Atom "cons", v0, _] = extractVal consType v
+  k $ v0
+
+evalList [Atom "cdr", e] k env = do
+  v <- evalTyped consType e env
+  let [Atom "cons", _, v1] = extractVal consType v
+  k $ v1
+
+evalList ([Atom "quote", e]) k _ = k e
 
 evalList ls _ _ =
   Err $ "Sorry. This is not valid SPL-Scheme expression:\n" ++ show (List ls)
