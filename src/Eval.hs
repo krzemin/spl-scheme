@@ -6,15 +6,12 @@ import Types
 import Sugar
 import Data.Map hiding (foldl)
 
-
-data Val expr = OK expr | Err String | TypeErr String
-type Env = Map String Expr
-type Cont = Expr -> Val Expr
-
+data Val expr = OK Env expr | Err String | TypeErr String
+type Cont = Env -> Expr -> Val Expr
 
 instance Monad Val where
-  return = OK
-  (OK e) >>= cont = cont e
+  return = OK [empty]
+  (OK _ expr) >>= cont = cont expr
   (Err s) >>= _ = Err s
   (TypeErr s) >>= _ = TypeErr s 
 
@@ -29,13 +26,20 @@ evalTyped t e env = do
 
 evalExpr :: Expr -> Cont -> Env -> Val Expr
 
-evalExpr (Num n) k _ = k $ Num n
-evalExpr (Bool b) k _ = k $ Bool b
-evalExpr (Str s) k _ = k $ Str s
-evalExpr (Atom a) k env = case lookup a env of
-  Just e -> evalExpr e k env
-  Nothing -> Err $ "Name `" ++ a ++ "` was not bound in current scope."
+evalExpr (Num n) k env = k env $ Num n
+evalExpr (Bool b) k env = k env $ Bool b
+evalExpr (Str s) k env = k env $ Str s
+evalExpr (Atom x) k env = case lookupEnv env of
+  Just v -> k env v
+  Nothing -> Err $ "Name `" ++ x ++ "` was not bound in current scope."
+  where
+    lookupEnv [] = Nothing
+    lookupEnv (m:ms) = case lookup x m of
+      Just v -> Just v
+      Nothing -> lookupEnv ms
+
 evalExpr (List ls) k env = evalList ls k env
+evalExpr clo@(Clo _ _) k env = k env clo
 
 
 numBinOpNoErr :: (Int -> Int -> Int) -> Expr -> Expr -> Cont -> Env -> Val Expr
@@ -44,7 +48,7 @@ numBinOpNoErr op e0 e1 k env = do
   let n0 = extractVal numType v0
   v1 <- evalTyped numType e1 env
   let n1 = extractVal numType v1
-  k $ Num (n0 `op` n1)
+  k env $ Num (n0 `op` n1)
 
 numBinOpDivErr :: (Int -> Int -> Int) -> Expr -> Expr -> Cont -> Env -> Val Expr
 numBinOpDivErr op e0 e1 k env = do
@@ -52,7 +56,7 @@ numBinOpDivErr op e0 e1 k env = do
   let n0 = extractVal numType v0
   v1 <- evalTyped numType e1 env
   let n1 = extractVal numType v1
-  if n1 == 0 then Err "Division by zero." else k $ Num (n0 `op` n1)
+  if n1 == 0 then Err "Division by zero." else k env $ Num (n0 `op` n1)
 
 
 evalList :: [Expr] -> Cont -> Env -> Val Expr
@@ -66,7 +70,7 @@ evalList [Atom "%", e0, e1] k env = numBinOpDivErr mod e0 e1 k env
 evalList [Atom "not", e] k env = do
   v <- evalTyped boolType e env
   let b = extractVal boolType v
-  k $ Bool (not b)
+  k env $ Bool (not b)
 
 evalList [Atom "cond", b, e0, e1] k env = do
   v <- evalTyped boolType b env
@@ -76,31 +80,47 @@ evalList [Atom "cond", b, e0, e1] k env = do
 evalList [Atom "cons", e0, e1] k env = do
   v0 <- evalExpr e0 OK env
   v1 <- evalExpr e1 OK env
-  k $ List [Atom "cons", v0, v1]
+  k env $ List [Atom "cons", v0, v1]
 
 evalList [Atom "car", e] k env = do
   v <- evalTyped consType e env
   let [Atom "cons", v0, _] = extractVal consType v
-  k $ v0
+  k env $ v0
 
 evalList [Atom "cdr", e] k env = do
   v <- evalTyped consType e env
   let [Atom "cons", _, v1] = extractVal consType v
-  k $ v1
+  k env $ v1
 
-evalList [Atom "quote", e] k _ = k e
+evalList [Atom "quote", e] k env = k env e
 
-evalList f@[Atom "lambda", Atom _, _] k _ = k $ List f
+evalList [Atom "define", Atom x, e] k env@(m:ms) = do
+  v <- evalExpr e OK env
+  if member x m
+    then Err $ "Name " ++ x ++ " was already defined in current scope."
+    else k (insert x v m : ms) v
+
+evalList (Atom "begin" : e : es) k env = evalBlock (e:es) (empty : env)
+  where
+    evalBlock [] _ = undefined
+    evalBlock [e'] env'@(_:ms) = do
+      v <- evalExpr e' k env'
+      k ms v
+    evalBlock (e':es') env' =
+      evalExpr e' (\env'' -> \_ -> evalBlock es' env'') env'
+
+evalList f@[Atom "lambda", Atom _, _] k env = k env $ Clo env (List f)
 
 evalList [e0, e1] k env = do
-  f <- evalTyped funType e0 env
-  let [Atom "lambda", Atom x, e] = extractVal funType f
+  f <- evalTyped cloType e0 env
+  let ((m:ms), List [Atom "lambda", Atom x, e]) = extractVal cloType f
   v <- evalExpr e1 OK env
-  evalExpr e k $ insert x v env
+  v' <- evalExpr e OK (insert x v m : ms)
+  k env v'
 
 evalList ls _ _ =
   Err $ "Sorry. This is not valid SPL-Scheme expression:\n" ++ show (List ls)
 
 
-eval :: Expr -> Val Expr
-eval e = evalExpr (desugar e) OK empty
+eval :: Expr -> Env -> Val Expr
+eval e = evalExpr (desugar e) OK
