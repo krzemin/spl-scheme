@@ -38,8 +38,6 @@ evalExpr (Atom a) k env = case lookup a env of
 evalExpr (List ls) k env = evalList ls k env
 
 
-
-
 numBinOpNoErr :: (Int -> Int -> Int) -> Expr -> Expr -> Cont -> Env -> Val Expr
 numBinOpNoErr op e0 e1 k env = do
   v0 <- evalTyped numType e0 env
@@ -55,6 +53,7 @@ numBinOpDivErr op e0 e1 k env = do
   v1 <- evalTyped numType e1 env
   let n1 = extractVal numType v1
   if n1 == 0 then Err "Division by zero." else k $ Num (n0 `op` n1)
+
 
 evalList :: [Expr] -> Cont -> Env -> Val Expr
 
@@ -89,7 +88,15 @@ evalList [Atom "cdr", e] k env = do
   let [Atom "cons", _, v1] = extractVal consType v
   k $ v1
 
-evalList ([Atom "quote", e]) k _ = k e
+evalList [Atom "quote", e] k _ = k e
+
+evalList f@[Atom "lambda", Atom _, _] k _ = k $ List f
+
+evalList [e0, e1] k env = do
+  f <- evalTyped funType e0 env
+  let [Atom "lambda", Atom x, e] = extractVal funType f
+  v <- evalExpr e1 OK env
+  evalExpr e k $ insert x v env
 
 evalList ls _ _ =
   Err $ "Sorry. This is not valid SPL-Scheme expression:\n" ++ show (List ls)
