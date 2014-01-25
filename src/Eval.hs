@@ -38,42 +38,31 @@ evalExpr (Atom a) k env = case lookup a env of
 evalExpr (List ls) k env = evalList ls k env
 
 
+
+
+numBinOpNoErr :: (Int -> Int -> Int) -> Expr -> Expr -> Cont -> Env -> Val Expr
+numBinOpNoErr op e0 e1 k env = do
+  v0 <- evalTyped numType e0 env
+  let n0 = extractVal numType v0
+  v1 <- evalTyped numType e1 env
+  let n1 = extractVal numType v1
+  k $ Num (n0 `op` n1)
+
+numBinOpDivErr :: (Int -> Int -> Int) -> Expr -> Expr -> Cont -> Env -> Val Expr
+numBinOpDivErr op e0 e1 k env = do
+  v0 <- evalTyped numType e0 env
+  let n0 = extractVal numType v0
+  v1 <- evalTyped numType e1 env
+  let n1 = extractVal numType v1
+  if n1 == 0 then Err "Division by zero." else k $ Num (n0 `op` n1)
+
 evalList :: [Expr] -> Cont -> Env -> Val Expr
 
-evalList [Atom "+", e0, e1] k env = do
-  v0 <- evalTyped numType e0 env
-  let n0 = extractVal numType v0
-  v1 <- evalTyped numType e1 env
-  let n1 = extractVal numType v1
-  k $ Num (n0 + n1)
-
-evalList [Atom "-", e0, e1] k env = do
-  v0 <- evalTyped numType e0 env
-  let n0 = extractVal numType v0
-  v1 <- evalTyped numType e1 env
-  let n1 = extractVal numType v1
-  k $ Num (n0 - n1)
-
-evalList [Atom "*", e0, e1] k env = do
-  v0 <- evalTyped numType e0 env
-  let n0 = extractVal numType v0
-  v1 <- evalTyped numType e1 env
-  let n1 = extractVal numType v1
-  k $ Num (n0 * n1)
-
-evalList [Atom "/", e0, e1] k env = do
-  v0 <- evalTyped numType e0 env
-  let n0 = extractVal numType v0
-  v1 <- evalTyped numType e1 env
-  let n1 = extractVal numType v1
-  if n1 == 0 then Err "Division by zero." else k $ Num (n0 `div` n1)
-
-evalList [Atom "%", e0, e1] k env = do
-  v0 <- evalTyped numType e0 env
-  let n0 = extractVal numType v0
-  v1 <- evalTyped numType e1 env
-  let n1 = extractVal numType v1
-  if n1 == 0 then Err "Division by zero." else k $ Num (n0 `mod` n1)
+evalList [Atom "+", e0, e1] k env = numBinOpNoErr (+) e0 e1 k env
+evalList [Atom "-", e0, e1] k env = numBinOpNoErr (-) e0 e1 k env
+evalList [Atom "*", e0, e1] k env = numBinOpNoErr (*) e0 e1 k env
+evalList [Atom "/", e0, e1] k env = numBinOpDivErr div e0 e1 k env
+evalList [Atom "%", e0, e1] k env = numBinOpDivErr mod e0 e1 k env
 
 evalList [Atom "not", e] k env = do
   v <- evalTyped boolType e env
