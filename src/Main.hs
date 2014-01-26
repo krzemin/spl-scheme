@@ -95,7 +95,7 @@ processEval :: String -> Env -> IO ()
 processEval line env = do
   case parseScheme line of
     Right expr -> do
-      case eval expr env of
+      case eval env $ desugar expr of
         OK env' e -> do { print e; repl env' }
         Err s -> do { putStrLn $ "Runtime error: " ++ s; repl env }
         TypeErr s -> do { putStrLn $ "Type error: " ++ s; repl env }

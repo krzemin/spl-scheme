@@ -3,7 +3,6 @@ module Eval where
 import Prelude hiding (lookup)
 import Expr
 import Types
-import Sugar
 import Data.Map hiding (foldl)
 
 data Val expr = OK Env expr | Err String | TypeErr String
@@ -149,5 +148,5 @@ evalList ls _ _ =
   Err $ "Sorry, this is not valid SPL-Scheme expression:\n" ++ show (List ls)
 
 
-eval :: Expr -> Env -> Val Expr
-eval e = evalExpr (desugar e) OK
+eval :: Env -> Expr -> Val Expr
+eval = evalExpr OK
