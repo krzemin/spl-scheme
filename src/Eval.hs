@@ -58,6 +58,21 @@ numBinOpDivErr op e0 e1 k env = do
   let n1 = extractVal numType v1
   if n1 == 0 then Err "Division by zero." else k env $ Num (n0 `op` n1)
 
+numBoolBinOpNoErr :: (Int -> Int -> Bool) -> Expr -> Expr -> Cont -> Env -> Val Expr
+numBoolBinOpNoErr op e0 e1 k env = do
+  v0 <- evalTyped numType e0 env
+  let n0 = extractVal numType v0
+  v1 <- evalTyped numType e1 env
+  let n1 = extractVal numType v1
+  k env $ Bool (n0 `op` n1)
+
+boolBinOpNoErr :: (Bool -> Bool -> Bool) -> Expr -> Expr -> Cont -> Env -> Val Expr
+boolBinOpNoErr op e0 e1 k env = do
+  v0 <- evalTyped boolType e0 env
+  let n0 = extractVal boolType v0
+  v1 <- evalTyped boolType e1 env
+  let n1 = extractVal boolType v1
+  k env $ Bool (n0 `op` n1)
 
 evalList :: [Expr] -> Cont -> Env -> Val Expr
 
@@ -66,11 +81,23 @@ evalList [Atom "-", e0, e1] k env = numBinOpNoErr (-) e0 e1 k env
 evalList [Atom "*", e0, e1] k env = numBinOpNoErr (*) e0 e1 k env
 evalList [Atom "/", e0, e1] k env = numBinOpDivErr div e0 e1 k env
 evalList [Atom "%", e0, e1] k env = numBinOpDivErr mod e0 e1 k env
+evalList [Atom "=", e0, e1] k env = numBoolBinOpNoErr (==) e0 e1 k env
+evalList [Atom "<", e0, e1] k env = numBoolBinOpNoErr (<) e0 e1 k env
+evalList [Atom "<=", e0, e1] k env = numBoolBinOpNoErr (<=) e0 e1 k env
+evalList [Atom ">", e0, e1] k env = numBoolBinOpNoErr (>) e0 e1 k env
+evalList [Atom ">=", e0, e1] k env = numBoolBinOpNoErr (>=) e0 e1 k env
+evalList [Atom "and", e0, e1] k env = boolBinOpNoErr (&&) e0 e1 k env
+evalList [Atom "or", e0, e1] k env = boolBinOpNoErr (||) e0 e1 k env
 
 evalList [Atom "not", e] k env = do
   v <- evalTyped boolType e env
   let b = extractVal boolType v
   k env $ Bool (not b)
+
+evalList [Atom "equals?", e0, e1] k env = do
+  v0 <- evalExpr e0 OK env
+  v1 <- evalExpr e1 OK env
+  k env $ Bool (v0 == v1)
 
 evalList [Atom "cond", b, e0, e1] k env = do
   v <- evalTyped boolType b env
