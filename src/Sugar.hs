@@ -12,6 +12,10 @@ desugar (Atom "false") = Bool False
 desugar (List [Atom "let", Atom x, e0, e1]) =
   List [List [Atom "lambda", Atom x, desugar e1], desugar e0]
 
+-- if desugared as primitive cond
+desugar (List [Atom "if", b, e0, e1]) =
+  List [Atom "cond", desugar b, desugar e0, desugar e1]
+
 -- desugaring multi-argument lambdas
 desugar (List [Atom "lambda", List [], e]) = desugar e
 desugar (List [Atom "lambda", List (Atom x : xs), e]) =
