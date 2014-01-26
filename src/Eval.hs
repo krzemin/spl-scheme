@@ -149,4 +149,4 @@ evalList ls _ _ =
 
 
 eval :: Env -> Expr -> Val Expr
-eval = evalExpr OK
+eval env expr = evalExpr expr OK env
