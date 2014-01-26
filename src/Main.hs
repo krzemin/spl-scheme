@@ -34,6 +34,12 @@ repl env = do
 printHelp :: Env -> IO ()
 printHelp env = do
   addHistory ":help"
+  putStrLn $ "This is mini Scheme-like language implementation written"
+  putStrLn $ "from scratch in Haskell during Semantics of Programming Languages"
+  putStrLn $ "course at CS Institute at University of Wrocław."
+  putStrLn ""
+  putStrLn $ "Authors: Piotr Krzemiński, Błażej Saladra"
+  putStrLn ""
   putStrLn $ "Available REPL commands:"
   putStrLn $ "  :exit            leave the REPL"
   putStrLn $ "  :help            show this info"
