@@ -146,7 +146,7 @@ evalList [e0, e1] k env = do
   k env v'
 
 evalList ls _ _ =
-  Err $ "Sorry. This is not valid SPL-Scheme expression:\n" ++ show (List ls)
+  Err $ "Sorry, this is not valid SPL-Scheme expression:\n" ++ show (List ls)
 
 
 eval :: Expr -> Env -> Val Expr
