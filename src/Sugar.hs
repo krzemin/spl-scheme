@@ -16,6 +16,12 @@ desugar (List [Atom "let", Atom x, e0, e1]) =
 desugar (List [Atom "if", b, e0, e1]) =
   List [Atom "cond", desugar b, desugar e0, desugar e1]
 
+-- fst, snd, head, tail functions desugared as car, cdr
+desugar (List [Atom "fst", e]) = List [Atom "car", desugar e]
+desugar (List [Atom "head", e]) = List [Atom "car", desugar e]
+desugar (List [Atom "snd", e]) = List [Atom "cdr", desugar e]
+desugar (List [Atom "tail", e]) = List [Atom "cdr", desugar e]
+
 -- desugaring multi-argument lambdas
 desugar (List [Atom "lambda", List [], e]) = desugar e
 desugar (List [Atom "lambda", List (Atom x : xs), e]) =
