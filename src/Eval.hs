@@ -94,15 +94,15 @@ evalList [Atom "not", e] env k = do
   let b = extractVal boolType v
   k env $ Bool (not b)
 
-evalList [Atom "equals?", e0, e1] env k = do
-  v0 <- evalExpr e0 env OK
-  v1 <- evalExpr e1 env OK
+evalList [Atom "equals?", e0, e1] k env = do
+  v0 <- evalExpr e0 OK env
+  v1 <- evalExpr e1 OK env
   k env $ Bool (v0 == v1)
 
-evalList [Atom "cond", b, e0, e1] env k = do
+evalList [Atom "cond", b, e0, e1] k env = do
   v <- evalTyped boolType b env
   let r = extractVal boolType v
-  if r then evalExpr e0 env k else evalExpr e1 env k
+  if r then evalExpr e0 k env else evalExpr e1 k env
 
 evalList [Atom "cons", e0, e1] env k = do
   v0 <- evalExpr e0 env OK
@@ -150,4 +150,4 @@ evalList ls _ _ =
 
 
 eval :: Expr -> Env -> Val Expr
-eval e env = evalExpr (desugar e) env OK
+eval e env = evalExpr e env OK
