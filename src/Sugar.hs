@@ -12,6 +12,13 @@ desugar (Atom "false") = Bool False
 desugar (List [Atom "let", Atom x, e0, e1]) =
   List [List [Atom "lambda", Atom x, desugar e1], desugar e0]
 
+-- let* desugared as lambda abstractions + applications
+desugar (List [Atom "let*", List [], e]) = e
+desugar (List [Atom "let*", List (List [Atom x, e'] : bs), e]) =
+  desugar (List [Atom "let", Atom x, e', desugar e''])
+  where
+    e'' = List [Atom "let*", List bs, e]
+
 -- if desugared as primitive cond
 desugar (List [Atom "if", b, e0, e1]) =
   List [Atom "cond", desugar b, desugar e0, desugar e1]
