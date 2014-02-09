@@ -53,7 +53,7 @@ instance Show Expr where
     "(" ++ show left ++ " " ++ show right ++ ")"
   show (List [Atom "cons", left, right]) =
     "(" ++ show left ++ " . " ++ show right ++ ")"
-  show (List []) = "()"
-  show (List (x:xs)) = foldl (\acc y -> acc ++ ' ' : show y) ('(' : show x) xs ++ ")"
+  show (List []) = "'()"
+  show (List (x:xs)) = foldl (\acc y -> acc ++ ' ' : show y) ("'(" ++ show x) xs ++ ")"
   show (Clo _) = "#closure"
  

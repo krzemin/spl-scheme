@@ -98,5 +98,17 @@ test_cons = do
   "(cons (cons 1 2) (cons 3 4))" `evalsTo` "'((1 . 2) 3 . 4)"
   "(cons (cons 1 2) (cons (cons 3 4) (cons 5 (cons 6 7))))" `evalsTo` "'((1 . 2) (3 . 4) 5 6 . 7)"
 
+test_car_cdr :: Assertion
+test_car_cdr = do
+  "(car (cons 1 2))" `evalsTo` "1"
+  "(cdr (cons 1 2))" `evalsTo` "2"
+  "(car (cons (cons 0 1) 2))" `evalsTo` "'(0 . 1)"
+  "(cdr (cons 1 (cons 2 3)))" `evalsTo` "'(2 . 3)"
 
-  
+test_quote :: Assertion
+test_quote = do
+  "(quote ())" `evalsTo` "'()"
+  "(quote (1 2 3))" `evalsTo` "'(1 2 3)"
+  "(quote (+ 2 3))" `evalsTo` "'(+ 2 3)"
+  "(quote (x y z))" `evalsTo` "'(x y z)"
+  "(quote (0 (cons 20 30) 0))" `evalsTo` "'(0 '(20 . 30) 0)"
