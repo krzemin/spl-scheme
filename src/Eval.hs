@@ -149,3 +149,6 @@ evalList ls _ _ =
 
 eval :: Expr -> Env -> Val Expr
 eval e env = evalExpr e env OK
+
+eval0 :: Expr -> Val Expr
+eval0 e = eval e [empty]
