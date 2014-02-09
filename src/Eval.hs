@@ -133,7 +133,7 @@ evalList (Atom "begin" : e : es) k env = evalBlock (e:es) (empty : env)
       v <- evalExpr e' k env'
       k ms v
     evalBlock (e':es') env' =
-      evalExpr e' (\env'' -> \_ -> evalBlock es' env'') env'
+      evalExpr e' (\env'' _ -> evalBlock es' env'') env'
 
 evalList f@[Atom "lambda", Atom _, _] k env = k env $ Clo env (List f)
 
@@ -143,6 +143,9 @@ evalList [e0, e1] k env = do
   v <- evalExpr e1 OK env
   v' <- evalExpr e OK (insert x v m : ms)
   k env v'
+
+evalList (e0 : e1 : es) k env =
+  evalList (List [e0, e1] : es) k env
 
 evalList ls _ _ =
   Err $ "Sorry, this is not valid SPL-Scheme expression:\n" ++ show (List ls)
