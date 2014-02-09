@@ -37,6 +37,23 @@ instance Show Expr where
   show (Bool False) = "#f"
   show (Atom x) = x
   show (Str s) = "\"" ++ s ++ "\""
+  show cons@(List [Atom "cons", _, _]) = "'(" ++ showCons cons ++ ")"
+    where
+      showCons (List [Atom "cons", left@(List [Atom "cons", _, _]), right@(List [Atom "cons", _, _])]) =
+        "(" ++ showCons left ++ ") " ++ showCons right
+      showCons (List [Atom "cons", left@(List [Atom "cons", _, _]), right]) =
+        "(" ++ showCons left ++ ") . " ++ showCons right
+      showCons (List [Atom "cons", left, right@(List [Atom "cons", _, _])]) =
+        showCons left ++ " " ++ showCons right
+      showCons (List [Atom "cons", left, right]) =
+        showCons left ++ " . " ++ showCons right
+      showCons expr = show expr
+
+  show (List [Atom "cons", left, right@(List [Atom "cons", _, _])]) =
+    "(" ++ show left ++ " " ++ show right ++ ")"
+  show (List [Atom "cons", left, right]) =
+    "(" ++ show left ++ " . " ++ show right ++ ")"
   show (List []) = "()"
   show (List (x:xs)) = foldl (\acc y -> acc ++ ' ' : show y) ('(' : show x) xs ++ ")"
   show (Clo _) = "#closure"
+ 

@@ -23,6 +23,8 @@ evalsToErr inTxt outMsg = let
   in assertEqual outMsg errMsg
 
 
+-- actual tests
+
 test_simpleEvalArith :: Assertion
 test_simpleEvalArith = do
   "10" `evalsTo` "10"
@@ -48,6 +50,53 @@ test_simpleEvalLogical :: Assertion
 test_simpleEvalLogical = do
   "true" `evalsTo` "#t"
   "false" `evalsTo` "#f"
+  "(= 0 0)" `evalsTo` "#t"
+  "(= 4 3)" `evalsTo` "#f"
+  "(< 1 2)" `evalsTo` "#t"
+  "(< 2 2)" `evalsTo` "#f"
+  "(< 3 2)" `evalsTo` "#f"
+  "(<= 1 2)" `evalsTo` "#t"
+  "(<= 2 2)" `evalsTo` "#t"
+  "(<= 3 2)" `evalsTo` "#f"
+  "(> 1 2)" `evalsTo` "#f"
+  "(> 2 2)" `evalsTo` "#f"
+  "(> 3 2)" `evalsTo` "#t"
+  "(>= 1 2)" `evalsTo` "#f"
+  "(>= 2 2)" `evalsTo` "#t"
+  "(>= 3 2)" `evalsTo` "#t"
+  "(and #t #t)" `evalsTo` "#t"
+  "(and #f #t)" `evalsTo` "#f"
+  "(and #t #f)" `evalsTo` "#f"
+  "(and #f #f)" `evalsTo` "#f"
+  "(or #t #t)" `evalsTo` "#t"
+  "(or #f #t)" `evalsTo` "#t"
+  "(or #t #f)" `evalsTo` "#t"
+  "(or #f #f)" `evalsTo` "#f"
+  "(not #t)" `evalsTo` "#f"
+  "(not #f)" `evalsTo` "#t"
+
+test_nestedEvalLogical :: Assertion
+test_nestedEvalLogical = do
+  "(< (+ 2 3) (* 2 3))" `evalsTo` "#t"
+  "(and (= 3 (+ 1 2)) (or (= 2 3) (not (> 0 0))))" `evalsTo` "#t"
+  "(or (<= 8 (+ 0 0)) (and true false))" `evalsTo` "#f"
+  "(or (<= 8 (/ 6 0)) (and true false))" `evalsToErr` "Division by zero."
+
+test_equals :: Assertion
+test_equals = do
+  "(equals? 3 3)" `evalsTo` "#t"
+  "(equals? \"abc\" \"abc\")" `evalsTo` "#t"
+  "(equals? 2 3)" `evalsTo` "#f"
+  "(equals? \"xyz\" \"abc\")" `evalsTo` "#f"
+  "(equals? 0 \"abc\")" `evalsTo` "#f"
+
+test_cons :: Assertion
+test_cons = do
+  "(cons 1 2)" `evalsTo` "'(1 . 2)"
+  "(cons (cons 1 2) 3)" `evalsTo` "'((1 . 2) . 3)"
+  "(cons 1 (cons 2 3))" `evalsTo` "'(1 2 . 3)"
+  "(cons (cons 1 2) (cons 3 4))" `evalsTo` "'((1 . 2) 3 . 4)"
+  "(cons (cons 1 2) (cons (cons 3 4) (cons 5 (cons 6 7))))" `evalsTo` "'((1 . 2) (3 . 4) 5 6 . 7)"
 
 
-
+  
