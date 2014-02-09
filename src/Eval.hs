@@ -4,7 +4,7 @@ import Prelude hiding (lookup)
 import Expr
 import Types
 import Data.Map hiding (foldl)
-
+import Data.Function (fix)
 
 evalTyped :: TypeDef repr -> Expr -> Env -> Val Expr
 evalTyped t e env = do
@@ -125,6 +125,11 @@ evalList (Atom "begin" : e : es) k env = evalBlock (e:es) (empty : env)
       k ms v
     evalBlock (e':es') env' =
       evalExpr e' (\env'' _ -> evalBlock es' env'') env'
+
+evalList [Atom "letrec", Atom f, Atom x, e0, e] k (m:ms) =
+  evalExpr e k (insert f (Clo fun) m : ms)
+  where
+    fun = fix (\g v k' -> evalExpr e0 k' (insert x v (insert f (Clo g) m) : ms))
 
 evalList [Atom "lambda", Atom x, e] k env@(m:ms) = k env $ Clo f
   where
