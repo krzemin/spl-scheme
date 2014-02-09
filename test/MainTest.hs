@@ -90,6 +90,19 @@ test_equals = do
   "(equals? \"xyz\" \"abc\")" `evalsTo` "#f"
   "(equals? 0 \"abc\")" `evalsTo` "#f"
 
+test_cond :: Assertion
+test_cond = do
+  "(cond #t 1 2)" `evalsTo` "1"
+  "(cond #f 1 2)" `evalsTo` "2"
+  "(cond (= 2 (+ 1 1)) \"abc\" 7)" `evalsTo` "\"abc\""
+
+test_if :: Assertion
+test_if = do
+  "(if #t 1 2)" `evalsTo` "1"
+  "(if #f 1 2)" `evalsTo` "2"
+  "(if (= 2 (+ 1 1)) \"abc\" 7)" `evalsTo` "\"abc\""
+
+
 test_cons :: Assertion
 test_cons = do
   "(cons 1 2)" `evalsTo` "'(1 . 2)"
@@ -105,6 +118,20 @@ test_car_cdr = do
   "(car (cons (cons 0 1) 2))" `evalsTo` "'(0 . 1)"
   "(cdr (cons 1 (cons 2 3)))" `evalsTo` "'(2 . 3)"
 
+test_fst_snd :: Assertion
+test_fst_snd = do
+  "(fst (cons 1 2))" `evalsTo` "1"
+  "(snd (cons 1 2))" `evalsTo` "2"
+  "(fst (cons (cons 0 1) 2))" `evalsTo` "'(0 . 1)"
+  "(snd (cons 1 (cons 2 3)))" `evalsTo` "'(2 . 3)"
+
+test_head_tail :: Assertion
+test_head_tail = do
+  "(head (cons 1 2))" `evalsTo` "1"
+  "(tail (cons 1 2))" `evalsTo` "2"
+  "(head (cons (cons 0 1) 2))" `evalsTo` "'(0 . 1)"
+  "(tail (cons 1 (cons 2 3)))" `evalsTo` "'(2 . 3)"
+
 test_quote :: Assertion
 test_quote = do
   "(quote ())" `evalsTo` "'()"
@@ -112,3 +139,44 @@ test_quote = do
   "(quote (+ 2 3))" `evalsTo` "'(+ 2 3)"
   "(quote (x y z))" `evalsTo` "'(x y z)"
   "(quote (0 (cons 20 30) 0))" `evalsTo` "'(0 '(20 . 30) 0)"
+
+test_blocks_define :: Assertion
+test_blocks_define = do
+  "(begin (+ 2 3))" `evalsTo` "5"
+  "(begin (define x 10))" `evalsTo` "10"
+  "(begin (define x 10) (+ x 3))" `evalsTo` "13"
+  "(begin (define x 10) (define y (+ x 30)) (+ x y))" `evalsTo` "50"
+  "(begin (define x 1) (define x 2))" `evalsToErr` "Name x was already defined in current scope."
+
+test_lambda :: Assertion
+test_lambda = do
+  "(lambda x x)" `evalsTo` "#closure"
+  "(lambda (x y z) 10)" `evalsTo` "#closure"
+  "(lambda x (lambda y (+ x y)))" `evalsTo` "#closure"
+  "(lambda x (/ 10 0))" `evalsTo` "#closure"
+
+test_application :: Assertion
+test_application = do
+  "((lambda x x) 5)" `evalsTo` "5"
+  "((lambda x (+ x 2)) 5)" `evalsTo` "7"
+  "((((lambda (x y z) (+ x (+ y z))) 1) 2) 3)" `evalsTo` "6"
+  "((lambda (x y z) (+ x (+ y z))) 1 2 3)" `evalsTo` "6"
+  "((lambda x (/ 10 x)) 0)" `evalsToErr` "Division by zero."
+
+test_let :: Assertion
+test_let = do
+  "(let x 5 x)" `evalsTo` "5"
+  "(let x (+ 2 2) (+ x x))" `evalsTo` "8"
+  "(let* ((x 2) (y 3)) (+ x y))" `evalsTo` "5"
+  "(let* ((x 2) (y (+ 2 x))) (+ x y))" `evalsTo` "6"
+
+test_letrec :: Assertion
+test_letrec = do
+  "(letrec f n (cond (= 0 n) 1 (* n (f (- n 1)))) (f 5))" `evalsTo` "120"
+  "(letrec f n (cond (< n 2) n (+ (f (- n 1)) (f (- n 2)))) (f 8))" `evalsTo` "21"
+
+test_defun :: Assertion
+test_defun = do
+  "(begin (defun (f x) (+ x 2)) (f 10))" `evalsTo` "12"
+  "(begin (defun (f a b c d) (+ (+ a b) (+ c d))) (f 3 7 9 1))" `evalsTo` "20"
+
