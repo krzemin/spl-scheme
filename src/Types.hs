@@ -39,8 +39,8 @@ consType = TypeDef "cons" exFun List where
   exFun (List ls@[Atom "cons", _, _]) = Just ls
   exFun _ = Nothing
 
-cloType :: TypeDef (Env, Expr)
+cloType :: TypeDef (Expr -> Cont -> Val Expr)
 cloType = TypeDef "closure" exFun consFun where
-  exFun (Clo env expr) = Just (env, expr)
+  exFun (Clo fun) = Just fun
   exFun _ = Nothing
-  consFun (env, expr) = Clo env expr
+  consFun = Clo
