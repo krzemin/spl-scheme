@@ -68,6 +68,18 @@ nowe konstrukcje do języka
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Szczegóły implementacyjne}
+\begin{itemize}
+  \item semantyka denotacyjna w stylu kontynuacyjnym
+  \item bardzo prosty core-language, dużo cukru syntaktycznego
+        (np. jednoargumentowe lambdy w semantyce,
+        wieloargumentowe definicje funkcji i~aplikacje jako cukier)
+  \item definicje typów języka jako ADT w Haskellu
+  \item typ wartości jako monada, kontynuacje jako prawy argument bind-a,
+        dzięki czemu możemy w naturalny sposób używać do-notacji podczas
+        implementowania semantyki
+\end{itemize}
+\end{frame}
 
 \begin{frame}{Składnia}
 \setlength{\grammarindent}{8em}
@@ -84,6 +96,7 @@ nowe konstrukcje do języka
 \end{frame}
 
 \begin{frame}{Dziedzina wartości}
+$Env = Ide -> Val$ \\
 $Cont = Env -> Val -> Val^{*}$ \\
 $Clo = Val -> Cont -> Val^{*}$ \\
 $Val = Exp \cup Clo$ \\
@@ -97,6 +110,14 @@ W implementacji:
 \end{itemize}
 \end{frame}
 
+
+\begin{frame}{Dynamiczne typowanie}
+$\iota_{num} : Exp -> Val$ \\
+$\iota_{bool} : Exp -> Val$ \\
+$\iota_{str} : Exp -> Val$ \\
+$\iota_{cons} : Exp -> Val$ \\
+$\iota_{clo} : Clo -> Val$ \\
+\end{frame}
 
 \begin{frame}[fragile]{Dynamiczne typowanie}
 \footnotesize \begin{minted}[mathescape]{haskell}
@@ -136,12 +157,44 @@ evalExpr (List [Atom "+", e0, e1]) env k =
 \end{frame}
 
 
-
-
-
+\begin{frame}{Funkcja semantyczna}
+$|[ \cdot |]: Exp -> Env -> Cont -> Val^{*}$ \newline
+\\
+$|[n|] \eta \kappa$ = $\kappa$ $\eta$ $(\iota_{num}~n)$ \\
+$|[b|] \eta \kappa$ = $\kappa$ $\eta$ $(\iota_{bool}$ $b$ $)$ \\
+$|[x|] \eta \kappa$ = $\kappa$ $\eta$ $(\eta~x)$ \\
+$|[s|] \eta \kappa$ = $\kappa$ $\eta$ $(\iota_{str}$ $s$ $)$ \newline
+\\
+$|[(\oplus~e_0~e_1)|] \eta \kappa$ = \\
+\hspace{1em}{$|[e_0|]$ $\eta$ ($\lambda \eta_0 n_0$ .} \\
+\hspace{2em}{$|[e_1|]$ $\eta$ ($\lambda \eta_1 n_1$ .} \\
+\hspace{3em}{$\kappa$ $\eta$ ($\iota_{num}$ ($n_0 \oplus n_1)$)} \\
+\hspace{2em}{$)_{num^{*}}$} \\
+\hspace{1em}{$)_{num^{*}}$} \newline
+\\
+$\oplus \in \{+,-,*\}$
+\end{frame}
 
 \begin{frame}{Funkcja semantyczna}
-$|[ \cdot |]: Exp -> Env -> Cont -> Val^{*}$
+$|[ \cdot |]: Exp -> Env -> Cont -> Val^{*}$ \newline
+\\
+$|[(\oslash~e_0~e_1)|] \eta \kappa$ = \\
+\hspace{1em}{$|[e_0|]$ $\eta$ ($\lambda \eta_0 n_0$ .} \\
+\hspace{2em}{$|[e_1|]$ $\eta$ ($\lambda \eta_1 n_1$ .} \\
+\hspace{3em}{\footnotesize cond($n_1=0$, <err,"division by zero">, \normalsize$\kappa$ $\eta$ ($\iota_{num}$ ($n_0 \oslash n_1)$))} \\
+\hspace{2em}{$)_{num^{*}}$} \\
+\hspace{1em}{$)_{num^{*}}$} \newline
+\\
+$\oslash \in \{\div,\%\}$ \newline
+\\
+\pause
+Podobnie dla pozostałych operatorów (and, or, =, <, $\leq$, ...)
+\end{frame}
+
+\begin{frame}{Funkcja semantyczna}
+$|[ \cdot |]: Exp -> Env -> Cont -> Val^{*}$ \newline
+\\
+$|[n|] \eta \kappa$ = $\kappa$ $\eta$ $(\iota_{num}~n)$ \\
 \end{frame}
 
 \begin{frame}{Cukier syntaktyczny}
@@ -150,7 +203,7 @@ $\mathcal{D} : Exp -> Exp$ \newline
 $\mathcal{D}|[$ true $|]$ = \#t \\
 $\mathcal{D}|[$ false $|]$ = \#f \newline
 \\
-$\mathcal{D}|[$ (if $b$ $e_0$ $e_1$ $|]$ =
+$\mathcal{D}|[$ (if $b$ $e_0$ $e_1$) $|]$ =
    (cond $\mathcal{D}|[ b |]$ $\mathcal{D}|[ e_0 |]$ $\mathcal{D}|[ e_1 |]$) \newline
 \\
 $\mathcal{D}|[$ (let $x$ $e'$ $e$) $|]$ =
@@ -175,19 +228,6 @@ $\mathcal{D}|[$ (defun ($f$ $x_1 \ldots x_n$) $e$) $|]$ = \\
 \end{frame}
 
 
-\begin{frame}{Szczegóły implementacyjne}
-\begin{itemize}
-  \item semantyka denotacyjna w stylu kontynuacyjnym
-  \item bardzo prosty core-language, dużo cukru syntaktycznego
-        (np. jednoargumentowe lambdy w semantyce,
-        wieloargumentowe definicje funkcji i~aplikacje jako cukier)
-  \item definicje typów języka jako ADT w Haskellu
-  \item typ wartości jako monada, kontynuacje jako prawy argument bind-a,
-        dzięki czemu możemy w naturalny sposób używać do-notacji podczas
-        implementowania semantyki
-\end{itemize}
-\end{frame}
-
 \begin{frame}
 \begin{center}
    \LARGE{Demo}
@@ -198,10 +238,19 @@ $\mathcal{D}|[$ (defun ($f$ $x_1 \ldots x_n$) $e$) $|]$ = \\
 \begin{itemize}
    \item rekursja wzajemna
    \item kontynuacje jako wartości pierwszego rzędu (call/cc)
+   \item uboga biblioteka standardowa
    \item pokaźniejszy zbiór przykładowych programów testowych
    \item dokument z formalnym opisem semantyki
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Materiały}
+\begin{itemize}
+   \item Reynolds
+   \item Racket
+   \item Write yourself Scheme in 48 hours
+   \item Notatki z SJP
+\end{itemize}
+\end{frame}
 
 \end{document}
