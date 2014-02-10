@@ -22,7 +22,7 @@
       n1
       (+ (fib1 (- n1 1)) (fib1 (- n1 2)))
     )
-    (fib1 n))
+  (fib1 n))
 )
 
 (map fib (range 1 20))
