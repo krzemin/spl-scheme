@@ -1,7 +1,8 @@
 module Main where
 
+import System.Environment
 import System.Console.Readline
-import Data.Map hiding (split)
+import Data.Map hiding (split, map, foldl)
 import Data.String.Utils
 import Parser
 import Eval
@@ -12,7 +13,14 @@ versionTag :: String
 versionTag = "0.1.0.0"
 
 main :: IO ()
-main = replMain
+main = do
+  args <- getArgs
+  case args of
+    [] -> replMain
+    [file] -> interpretFile file
+    otherwise -> showHelp
+
+-- REPL
 
 replMain :: IO ()
 replMain = do
@@ -34,6 +42,11 @@ repl env = do
 printHelp :: Env -> IO ()
 printHelp env = do
   addHistory ":help"
+  showHelp
+  repl env
+
+showHelp :: IO ()
+showHelp = do
   putStrLn "This is mini Scheme-like language implementation written"
   putStrLn "from scratch in Haskell during Semantics of Programming Languages"
   putStrLn "course at CS Institute at University of Wrocław."
@@ -52,7 +65,7 @@ printHelp env = do
   putStrLn "  :reset           unbind all names"
   putStrLn "  :desugar expr    show desugared expression"
   putStrLn "  expr             evaluate expression"
-  repl env
+
 
 printEnv :: Env -> IO ()
 printEnv env = do
@@ -104,4 +117,33 @@ processEval line env = do
         Err s -> do { putStrLn $ "Runtime error: " ++ s; repl env }
         TypeErr s -> do { putStrLn $ "Type error: " ++ s; repl env }
     Left e -> do { putStrLn $ "Parse error: " ++ e; repl env }
+
+
+-- INTERPRETER
+
+interpretFile :: FilePath -> IO ()
+interpretFile file = do
+  fileContent <- readFile file
+  case parseFileContent fileContent of
+    Left e -> putStrLn $ "Parse error" ++ e
+    Right exprs -> do
+      exprs' <- expandModules exprs
+      let exprs'' = map desugar exprs'
+      let val = foldl interpretExpr (OK [empty] (List [])) exprs''
+      case val of
+        OK _ expr -> print expr
+        Err e -> putStrLn $ "Runtime error: " ++ e
+        TypeErr e -> putStrLn $ "Type error: " ++ e
+  return ()
+
+interpretExpr :: Val Expr -> Expr -> Val Expr
+interpretExpr (OK env _) expr = eval expr env
+interpretExpr v@(Err _) _ = v
+interpretExpr v@(TypeErr _) _ = v
+
+
+expandModules :: [Expr] -> IO [Expr]
+expandModules = return
+
+
 
