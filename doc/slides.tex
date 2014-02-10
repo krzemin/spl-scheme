@@ -7,6 +7,8 @@
 \setbeamercovered{invisible}
 \usepackage{graphicx}
 
+
+\usepackage{minted}
 \usepackage{semantic}
 \usepackage{syntax}
 
@@ -82,15 +84,61 @@ nowe konstrukcje do języka
 \end{frame}
 
 \begin{frame}{Dziedzina wartości}
-$Cont = Env -> Exp -> Val^{*}$ \\
-$Clo = Exp -> Cont -> Val^{*}$ \\
+$Cont = Env -> Val -> Val^{*}$ \\
+$Clo = Val -> Cont -> Val^{*}$ \\
 $Val = Exp \cup Clo$ \\
-$Val^{*} \approx (Env \times Val)~+~(\{err\} \times \Sigma^{*})~+~(\{typerr\} \times \Sigma^{*})$\\
+$Val^{*} \approx ((Env \times Val)~+~(\{err\} \times \Sigma^{*})~+~(\{typerr\} \times \Sigma^{*}))_{\bot}$\newline
+\\
+\pause
+W implementacji:
+\begin{itemize}
+  \item $Val = Exp$
+  \item $Exp~::=~\ldots~|~Clo$
+\end{itemize}
 \end{frame}
 
-\begin{frame}{Dynamiczne typowanie}
 
+\begin{frame}[fragile]{Dynamiczne typowanie}
+\footnotesize \begin{minted}[mathescape]{haskell}
+data TypeDef repr = TypeDef {
+  name :: String,
+  toRepr :: Expr -> Maybe repr,
+  fromRepr :: repr -> Expr
+}
+
+numType :: TypeDef Int
+numType = TypeDef "num" extract Num where
+  extract (Num n) = Just n
+  extract _ = Nothing
+
+boolType :: TypeDef Bool
+boolType = TypeDef "bool" extract Bool where
+  extract (Bool b) = Just b
+  extract _ = Nothing
+  
+-- atom, string, cons, closure
+\end{minted}
 \end{frame}
+
+\begin{frame}[fragile]{Dynamiczne typowanie}
+\footnotesize \begin{minted}[mathescape]{haskell}
+typed :: TypeDef repr -> (repr -> Val) -> Cont
+typed t cont _ val =
+  case (toRepr t) val of
+    Just v -> cont v
+    Nothing -> TypeErr ("Expected type `" ++ name t)
+
+evalExpr (List [Atom "+", e0, e1]) env k =
+  evalExpr e0 env $ typed numType $ \n0 ->
+  evalExpr e1 env $ typed numType $ \n1 ->
+  k env (Num (n0 + n1))
+\end{minted}
+\end{frame}
+
+
+
+
+
 
 \begin{frame}{Funkcja semantyczna}
 $|[ \cdot |]: Exp -> Env -> Cont -> Val^{*}$
