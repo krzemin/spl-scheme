@@ -150,6 +150,8 @@ test_nil :: Assertion
 test_nil = do
   "(nil? (cons 1 2))" `evalsTo` "#f"
   "(nil? (quote ()))" `evalsTo` "#t"
+  "(nil? nil)" `evalsTo` "#t"
+  "(cons 1 nil)" `evalsTo` "'(1 . '())"
 
 test_blocks_define :: Assertion
 test_blocks_define = do
