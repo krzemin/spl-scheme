@@ -29,6 +29,10 @@ desugar (List [Atom "head", e]) = List [Atom "car", desugar e]
 desugar (List [Atom "snd", e]) = List [Atom "cdr", desugar e]
 desugar (List [Atom "tail", e]) = List [Atom "cdr", desugar e]
 
+-- nil desugared as equal
+desugar (List [Atom "nil?", xs]) =
+  List [Atom "equals?", List [Atom "quote", List []], desugar xs]
+
 -- desugaring multi-argument lambdas
 desugar (List [Atom "lambda", List [], e]) = desugar e
 desugar (List [Atom "lambda", List (Atom x : xs), e]) =

@@ -146,6 +146,11 @@ test_quote = do
   "(quote (x y z))" `evalsTo` "'(x y z)"
   "(quote (0 (cons 20 30) 0))" `evalsTo` "'(0 '(20 . 30) 0)"
 
+test_nil :: Assertion
+test_nil = do
+  "(nil? (cons 1 2))" `evalsTo` "#f"
+  "(nil? (quote ()))" `evalsTo` "#t"
+
 test_blocks_define :: Assertion
 test_blocks_define = do
   "(begin (+ 2 3))" `evalsTo` "5"
