@@ -72,9 +72,9 @@ evalList [Atom "equals?", e0, e1] env k =
   evalExpr e1 env $ \_ v1 ->
   k env $ Bool (v0 == v1)
 
-evalList [Atom "cond", b, e0, e1] env k =
-  evalExpr b env $ typed boolType $ \bv ->
-  if bv then evalExpr e0 env k else evalExpr e1 env k
+evalList [Atom "cond", e, e0, e1] env k =
+  evalExpr e env $ typed boolType $ \b ->
+  if b then evalExpr e0 env k else evalExpr e1 env k
 
 evalList [Atom "cons", e0, e1] env k =
   evalExpr e0 env $ \_ v0 ->
