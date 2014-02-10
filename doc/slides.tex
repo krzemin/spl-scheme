@@ -1,0 +1,117 @@
+\documentclass[12pt]{beamer}
+\usepackage[T1]{fontenc}
+\usepackage{concrete}
+\usepackage[utf8]{inputenc}
+\usepackage[MeX]{polski}
+\usepackage{minted}
+\usepackage{graphicx}
+
+\usetheme{Antibes}
+\usefonttheme{serif}
+\usecolortheme[RGB={20,80,150}]{structure} 
+\setbeamercovered{invisible}
+
+\title{SPL-Scheme}
+\author{Piotr Krzemiński}
+\date{Wrocław, 11 lutego 2014}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\scriptsize \tableofcontents
+\end{frame}
+
+\section{Motywacja i cele}
+
+\begin{frame}
+\begin{itemize}
+  \item napisać trochę większy projekt w Haskellu (z~wykorzystaniem Cabala)
+  \item zgłębić tajniki semantyki denotacyjnej, szczególnie w wersji CPS
+  \item wykorzystać w praktyce wiedzę zdobytą na SJP
+  \item m.in.: gorliwa ewaluacja, dynamiczne typowanie, kontynuacje, call/cc
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+Dlaczego Scheme?
+\begin{itemize}
+  \item niebardzo chcieliśmy skupiać się na pisaniu skomplikowanego
+        parsera czy typecheckera
+  \item dobra okazja, aby głębiej poznać rodzinę języków lispowych
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+Scheme jest ustandaryzowany
+\begin{itemize}
+  \item standard organizacji IEEE (The IEEE standard, 1178-1990 (R1995))
+  \item raport $R^6RS$ (Revised6 Report on the Algorithmic Language Scheme)
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{center}
+Nasze podejście: zacząć od bardzo małego podzbioru, sukcesywnie dodając
+nowe konstrukcje do języka
+\end{center}
+\end{frame}
+
+\section{Stan obecny}
+
+\begin{frame}
+\begin{itemize}
+  \item parser (w Parsecu)
+  \item konsola interaktywna (REPL)
+  \item ewaluacja wyrażeń arytmetycznych i logicznych
+  \item lambda-abstrakcja i aplikacja
+  \item lispowe struktury danych (cons, car, cdr, ...)
+  \item statycznie wiązane definicje zmiennych i funkcji
+  \item rekursja (nawet wzajemna!)
+  \item obsługa modułów ładowanych z zewnętrznych plików
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+Szczegóły implementacyjne:
+\begin{itemize}
+  \item semantyka denotacyjna w stylu kontynuacyjnym
+  \item bardzo prosty core-language, dużo cukru syntaktycznego
+        (np. jednoargumentowe lambdy w semantyce,
+        wieloargumentowe definicje funkcji i~aplikacje jako cukier)
+  \item definicje typów języka jako ADT w Haskellu
+  \item typ wartości jako monada, kontynuacje jako prawy argument bind-a,
+        dzięki czemu możemy w naturalny sposób używać do-notacji podczas
+        implementowania semantyki
+\end{itemize}
+\end{frame}
+
+\section{Formalny opis języka}
+
+\subsection{AST}
+
+\subsection{Dziedzina wartości}
+
+\subsection{Odcukrzanie}
+
+\subsection{Semantyka denotacyjna (CPS)}
+
+\section{Demo}
+
+\begin{frame}
+\begin{center}
+   \LARGE{Demo}
+\end{center}
+\end{frame}
+
+\section{Czego brakuje?}
+
+
+
+\end{document}
