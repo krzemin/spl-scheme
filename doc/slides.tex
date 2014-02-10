@@ -25,10 +25,9 @@
 
 \begin{frame}{Motywacja i cele}
 \begin{itemize}
-  \item napisać trochę większy projekt w Haskellu (z~wykorzystaniem Cabala)
-  \item zgłębić tajniki semantyki denotacyjnej, szczególnie w wersji CPS
+  \item napisać trochę większy projekt w Haskellu z~wykorzystaniem Cabala
   \item wykorzystać w praktyce wiedzę zdobytą na SJP
-  \item m.in.: gorliwa ewaluacja, dynamiczne typowanie, kontynuacje, call/cc
+  \item bliżej poznać semantykę denotacyjną, kontynuacje, CPS, call/cc
 \end{itemize}
 \end{frame}
 
@@ -70,13 +69,8 @@ nowe konstrukcje do języka
 \begin{frame}{Szczegóły implementacyjne}
 \begin{itemize}
   \item semantyka denotacyjna w stylu kontynuacyjnym
-  \item bardzo prosty core-language, dużo cukru syntaktycznego
-        (np. jednoargumentowe lambdy w semantyce,
-        wieloargumentowe definicje funkcji i~aplikacje jako cukier)
+  \item minimalny core-language, dużo cukru syntaktycznego
   \item definicje typów języka jako ADT w Haskellu
-  \item typ wartości jako monada, kontynuacje jako prawy argument bind-a,
-        dzięki czemu możemy w naturalny sposób używać do-notacji podczas
-        implementowania semantyki
 \end{itemize}
 \end{frame}
 
@@ -156,7 +150,7 @@ evalExpr (List [Atom "+", e0, e1]) env k =
 \end{frame}
 
 
-\begin{frame}{Funkcja semantyczna}
+\begin{frame}{Semantyka}
 $|[ \cdot |]: Exp -> Env -> Cont -> Val^{\star}$ \newline
 \\
 $|[n|] \eta \kappa$ = $\kappa$ $\eta$ $(\iota_{num}~n)$ \\
@@ -174,7 +168,7 @@ $|[(\oplus~e_0~e_1)|] \eta \kappa$ = \\
 $\oplus \in \{+,-,*\}$
 \end{frame}
 
-\begin{frame}{Funkcja semantyczna}
+\begin{frame}{Semantyka}
 $|[ \cdot |]: Exp -> Env -> Cont -> Val^{\star}$ \newline
 \\
 $|[(\oslash~e_0~e_1)|] \eta \kappa$ = \\
@@ -190,7 +184,7 @@ $\oslash \in \{/,\%\}$ \newline
 Podobnie dla pozostałych operatorów (and, or, =, <, $\leq$, ...)
 \end{frame}
 
-\begin{frame}{Funkcja semantyczna}
+\begin{frame}{Semantyka}
 $|[ \cdot |]: Exp -> Env -> Cont -> Val^{\star}$ \newline
 \\
 $|[$(not $e$)$|] \eta \kappa$ =
@@ -211,7 +205,7 @@ $|[$(cdr $e$)$|] \eta \kappa$ =
   $|[e|]$ $\eta$ ($\lambda \eta' $<$v1, v2$> . $\kappa$ $\eta$ $v2)_{cons^{*}}$ \\
 \end{frame}
 
-\begin{frame}{Funkcja semantyczna}
+\begin{frame}{Semantyka}
 $|[ \cdot |]: Exp -> Env -> Cont -> Val^{\star}$ \newline
 \\
 $|[$(quote ($e_0 \ldots e_n$))$|] \eta \kappa$ =
@@ -232,7 +226,7 @@ $|[$(letrec $f~x~e'~e$)$|] \eta \kappa$ = $|[e|]~\eta[f \mapsto fix~F]~\kappa$ \
 \hspace{2em}{ $F~g~v~\kappa' = |[e'|] ~ \eta[f \mapsto (\iota_{clo} ~ g)][x \mapsto v] ~ \kappa' $ } \\
 \end{frame}
 
-\begin{frame}{Funkcja semantyczna}
+\begin{frame}{Semantyka}
 $|[ \cdot |]: Exp -> Env -> Cont -> Val^{\star}$ \newline
 \\
 \[
@@ -281,7 +275,10 @@ $\mathcal{D}|[$ (lambda ($x_1 \ldots x_n$) $e$) $|]$ = \\
 \hspace{2em}{$\mathcal{D}|[$(lambda $x_1$ (\ldots(lambda $x_n$ $\mathcal{D}|[e|]$)\ldots))$|]$}\newline
 \\
 $\mathcal{D}|[$ (defun ($f$ $x_1 \ldots x_n$) $e$) $|]$ = \\ 
-\hspace{2em}{(define $f$ $\mathcal{D}|[$ (lambda ($x_1 \ldots x_n$) $e$ ) $|]$ )}\\
+\hspace{2em}{(define $f$ $\mathcal{D}|[$ (lambda ($x_1 \ldots x_n$) $e$ ) $|]$ )}\newline
+\\
+$\mathcal{D}|[$ ($e_1 \ldots e_n$) $|]$ =
+  ($\mathcal{D}|[e_1|] \ldots \mathcal{D}|[e_n|] $)\\
 
 \end{frame}
 
@@ -297,6 +294,7 @@ $\mathcal{D}|[$ (defun ($f$ $x_1 \ldots x_n$) $e$) $|]$ = \\
    \item rekursja wzajemna
    \item kontynuacje jako wartości pierwszego rzędu (call/cc)
    \item moduły ładowane z zewnętrznych plików
+   \item system makr
    \item uboga biblioteka standardowa
    \item dokument z formalnym opisem semantyki
 \end{itemize}
