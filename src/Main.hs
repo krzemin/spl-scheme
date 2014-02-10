@@ -18,7 +18,7 @@ main = do
   case args of
     [] -> replMain
     [file] -> interpretFile file
-    otherwise -> showHelp
+    _ -> showHelp
 
 -- REPL
 
