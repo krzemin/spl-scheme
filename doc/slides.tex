@@ -119,7 +119,9 @@ data TypeDef repr = TypeDef {
   name :: String,
   toRepr :: Expr -> Maybe repr
 }
-
+\end{minted}
+\pause
+\footnotesize \begin{minted}[mathescape]{haskell}
 numType :: TypeDef Int
 numType = TypeDef "num" extract where
   extract (Num n) = Just n
@@ -140,8 +142,10 @@ typed :: TypeDef repr -> (repr -> Val) -> Cont
 typed t cont _ val =
   case (toRepr t) val of
     Just v -> cont v
-    Nothing -> TypeErr ("Expected type `" ++ name t)
-
+    Nothing -> TypeErr ("Expected type " ++ name t)
+\end{minted}
+\pause
+\footnotesize \begin{minted}[mathescape]{haskell}
 evalExpr (List [Atom "+", e0, e1]) env k =
   evalExpr e0 env $ typed numType $ \n0 ->
   evalExpr e1 env $ typed numType $ \n1 ->
@@ -219,9 +223,9 @@ $|[(e_0~e_1)|] \eta \kappa$ =
   $|[e_1|]$ $\eta$ ($\lambda \eta_1 v$ . $f~v~\kappa))_{clo^{*}}$ \newline
 \\
 $|[(e_1~e_2~e_3 \ldots e_n)|] \eta \kappa$ =
-  $|[ (\ldots(e_0~e_1)~e_2) \ldots e_n) |]$ $\eta$ $\kappa$ \newline
+  $|[ (\ldots(e_1~e_2)~e_3) \ldots e_n) |]$ $\eta$ $\kappa$ \newline
 \\
-$|[$(letrec $f~x~e'~e$)$|] \eta \kappa$ = $|[e|]~\eta[f \mapsto fix~F]~\kappa$ \\
+$|[$(letrec $f~x~e'~e$)$|] \eta \kappa$ = $|[e|]~\eta[f \mapsto (\iota_{clo}~(fix~F))]~\kappa$ \\
 \hspace{1em}{gdzie:} \\
 \hspace{2em}{ $F~g~v~\kappa' = |[e'|] ~ \eta[f \mapsto (\iota_{clo} ~ g)][x \mapsto v] ~ \kappa' $ } \\
 \end{frame}
@@ -272,13 +276,14 @@ $\mathcal{D}|[$ (nil? $e$) $|]$ =
    (equals? $\mathcal{D}|[$ nil $|]$ $\mathcal{D}|[$ e $|]$) \newline
 \\
 $\mathcal{D}|[$ (lambda ($x_1 \ldots x_n$) $e$) $|]$ = \\
-\hspace{2em}{$\mathcal{D}|[$(lambda $x_1$ (\ldots(lambda $x_n$ $\mathcal{D}|[e|]$)\ldots))$|]$}\newline
+\hspace{2em}{(lambda $x_1$ (\ldots(lambda $x_n$ $\mathcal{D}|[e|]$)\ldots))}\newline
 \\
 $\mathcal{D}|[$ (defun ($f$ $x_1 \ldots x_n$) $e$) $|]$ = \\ 
 \hspace{2em}{(define $f$ $\mathcal{D}|[$ (lambda ($x_1 \ldots x_n$) $e$ ) $|]$ )}\newline
 \\
 $\mathcal{D}|[$ ($e_1 \ldots e_n$) $|]$ =
   ($\mathcal{D}|[e_1|] \ldots \mathcal{D}|[e_n|] $)\\
+$\mathcal{D}|[~e~|]$ = $e$
 
 \end{frame}
 
@@ -291,7 +296,7 @@ $\mathcal{D}|[$ ($e_1 \ldots e_n$) $|]$ =
 
 \begin{frame}{Czego brakuje?}
 \begin{itemize}
-   \item rekursja wzajemna
+   \item rekursja wzajemna (letrec*)
    \item kontynuacje jako wartości pierwszego rzędu (call/cc)
    \item moduły ładowane z zewnętrznych plików
    \item system makr
