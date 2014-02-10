@@ -82,11 +82,18 @@ nowe konstrukcje do języka
 \end{frame}
 
 \begin{frame}{Dziedzina wartości}
+$Cont = Env -> Exp -> Val^{*}$ \\
+$Clo = Exp -> Cont -> Val^{*}$ \\
+$Val = Exp \cup Clo$ \\
+$Val^{*} \approx (Env \times Val)~+~(\{err\} \times \Sigma^{*})~+~(\{typerr\} \times \Sigma^{*})$\\
+\end{frame}
+
+\begin{frame}{Dynamiczne typowanie}
 
 \end{frame}
 
 \begin{frame}{Funkcja semantyczna}
-$|[ \cdot |]: Exp -> Env -> Cont -> Val*$
+$|[ \cdot |]: Exp -> Env -> Cont -> Val^{*}$
 \end{frame}
 
 \begin{frame}{Cukier syntaktyczny}
