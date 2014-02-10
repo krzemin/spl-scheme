@@ -22,11 +22,17 @@ evalsToErr inTxt outMsg = let
   (Err errMsg) = eval0 $ desugar parsed
   in assertEqual outMsg errMsg
 
+evalsToTypeErr :: String -> String -> Assertion
+evalsToTypeErr inTxt outMsg = let
+  (Right parsed) = parseScheme inTxt
+  (TypeErr errMsg) = eval0 $ desugar parsed
+  in assertEqual outMsg errMsg
+
 
 -- actual tests
 
-test_simpleEvalArith :: Assertion
-test_simpleEvalArith = do
+test_simple_eval_arith :: Assertion
+test_simple_eval_arith = do
   "10" `evalsTo` "10"
   "(+ 10 20)" `evalsTo` "30"
   "(* 2 3)" `evalsTo` "6"
@@ -35,19 +41,19 @@ test_simpleEvalArith = do
   "(/ 10 7)" `evalsTo` "1"
   "(% 3 2)" `evalsTo` "1"
 
-test_errorsEvalArith :: Assertion
-test_errorsEvalArith = do
+test_errors_eval_arith :: Assertion
+test_errors_eval_arith = do
   "(/ 5 0)" `evalsToErr` "Division by zero."
   "(% 5 0)" `evalsToErr` "Division by zero."
 
-test_nestedEvalArith :: Assertion
-test_nestedEvalArith = do
+test_nested_eval_arith :: Assertion
+test_nested_eval_arith = do
   "(* (+ 2 (% 11 4)) (- 7 (/ 5 2)))" `evalsTo` "25"
   "(* (+ 2 (% 11 0)) (- 7 (/ 5 2)))" `evalsToErr` "Division by zero."
   "(/ (+ 2 (* 7 8)) (- 7 (+ 5 2)))" `evalsToErr` "Division by zero."
 
-test_simpleEvalLogical :: Assertion
-test_simpleEvalLogical = do
+test_simple_eval_logical :: Assertion
+test_simple_eval_logical = do
   "true" `evalsTo` "#t"
   "false" `evalsTo` "#f"
   "(= 0 0)" `evalsTo` "#t"
@@ -75,8 +81,8 @@ test_simpleEvalLogical = do
   "(not #t)" `evalsTo` "#f"
   "(not #f)" `evalsTo` "#t"
 
-test_nestedEvalLogical :: Assertion
-test_nestedEvalLogical = do
+test_nested_eval_logical :: Assertion
+test_nested_eval_logical = do
   "(< (+ 2 3) (* 2 3))" `evalsTo` "#t"
   "(and (= 3 (+ 1 2)) (or (= 2 3) (not (> 0 0))))" `evalsTo` "#t"
   "(or (<= 8 (+ 0 0)) (and true false))" `evalsTo` "#f"
@@ -179,4 +185,12 @@ test_defun :: Assertion
 test_defun = do
   "(begin (defun (f x) (+ x 2)) (f 10))" `evalsTo` "12"
   "(begin (defun (f a b c d) (+ (+ a b) (+ c d))) (f 3 7 9 1))" `evalsTo` "20"
+
+test_type_errors :: Assertion
+test_type_errors = do
+  "(+ 2 \"abc\")" `evalsToTypeErr` "Expected type `num`, given \"abc\""
+  "(5 6)" `evalsToTypeErr` "Expected type `closure`, given 5"
+  "(and #f 3)" `evalsToTypeErr` "Expected type `bool`, given 3"
+  "(car 10)" `evalsToTypeErr` "Expected type `cons`, given 10"
+  "(cdr 10)" `evalsToTypeErr` "Expected type `cons`, given 10"
 
