@@ -115,7 +115,8 @@ W implementacji:
 $\iota_{num} : Exp -> Val$ \\
 $\iota_{bool} : Exp -> Val$ \\
 $\iota_{str} : Exp -> Val$ \\
-$\iota_{cons} : Exp -> Val$ \\
+$\iota_{list} : Exp^{*} -> Val$ \\
+$\iota_{cons} : Val \times Val -> Val$ \\
 $\iota_{clo} : Clo -> Val$ \\
 \end{frame}
 
@@ -181,11 +182,11 @@ $|[ \cdot |]: Exp -> Env -> Cont -> Val^{*}$ \newline
 $|[(\oslash~e_0~e_1)|] \eta \kappa$ = \\
 \hspace{1em}{$|[e_0|]$ $\eta$ ($\lambda \eta_0 n_0$ .} \\
 \hspace{2em}{$|[e_1|]$ $\eta$ ($\lambda \eta_1 n_1$ .} \\
-\hspace{3em}{\footnotesize cond($n_1=0$, <err,"division by zero">, \normalsize$\kappa$ $\eta$ ($\iota_{num}$ ($n_0 \oslash n_1)$))} \\
+\hspace{3em}{cond($n_1=0$, <err,"div. by 0">, $\kappa$ $\eta$ ($\iota_{num}$ ($n_0 \oslash n_1)$))} \\
 \hspace{2em}{$)_{num^{*}}$} \\
 \hspace{1em}{$)_{num^{*}}$} \newline
 \\
-$\oslash \in \{\div,\%\}$ \newline
+$\oslash \in \{/,\%\}$ \newline
 \\
 \pause
 Podobnie dla pozostałych operatorów (and, or, =, <, $\leq$, ...)
@@ -194,7 +195,43 @@ Podobnie dla pozostałych operatorów (and, or, =, <, $\leq$, ...)
 \begin{frame}{Funkcja semantyczna}
 $|[ \cdot |]: Exp -> Env -> Cont -> Val^{*}$ \newline
 \\
-$|[n|] \eta \kappa$ = $\kappa$ $\eta$ $(\iota_{num}~n)$ \\
+$|[$(not $e$)$|] \eta \kappa$ =
+  $|[e|]$ $\eta$ ($\lambda \eta' b$ . $\kappa$ $\eta$ $(\iota_{bool} (\neg b)))_{bool^{*}}$ \\
+$|[$(cond $e$ $e_0$ $e_1$)$|] \eta \kappa$ = \\
+\hspace{1em}{$|[e|]$ $\eta$ ($\lambda \eta' b$ . cond(b, $|[e_0|] \eta \kappa$, $|[e_1|] \eta \kappa$) $)_{bool^{*}}$} \newline
+\\
+$|[$(cons $e_0~e_1$)$|] \eta \kappa$ = \\
+\hspace{1em}{$|[e_0|]$ $\eta$ ($\lambda \eta_0 v_0$ .} \\
+\hspace{2em}{$|[e_1|]$ $\eta$ ($\lambda \eta_1 v_1$ .} \\
+\hspace{3em}{$\kappa$ $\eta$ ($\iota_{cons}$ <$v_0, v_1$>)} \\
+\hspace{2em}{)} \\
+\hspace{1em}{)} \newline
+\\
+$|[$(car $e$)$|] \eta \kappa$ =
+  $|[e|]$ $\eta$ ($\lambda \eta' $<$v1, v2$> . $\kappa$ $\eta$ $v1)_{cons^{*}}$ \\
+$|[$(cdr $e$)$|] \eta \kappa$ =
+  $|[e|]$ $\eta$ ($\lambda \eta' $<$v1, v2$> . $\kappa$ $\eta$ $v2)_{cons^{*}}$ \\
+\end{frame}
+
+\begin{frame}{Funkcja semantyczna}
+$|[ \cdot |]: Exp -> Env -> Cont -> Val^{*}$ \newline
+\\
+$|[$(quote ($e_0 \ldots e_n$))$|] \eta \kappa$ =
+  $\kappa$ $\eta$ $(\iota_{list} (e_0 \cdots e_n)))$ \newline
+\\
+$|[$(lambda $x$ $e$)$|] \eta \kappa$ =
+  $\kappa$ $\eta$ $(\iota_{clo} (\lambda v \kappa'~.~ |[e|]~\eta[x \mapsto v]~\kappa' ))$ \newline
+\\
+$|[(e_0~e_1)|] \eta \kappa$ =
+  $|[e_0|]$ $\eta$ ($\lambda \eta_0 f$ .
+  $|[e_1|]$ $\eta$ ($\lambda \eta_1 v$ . $f~v~\kappa))_{clo^{*}}$ \newline
+\\
+$|[(e_1~e_2~e_3 \ldots e_n)|] \eta \kappa$ =
+  $|[ (\ldots(e_0~e_1)~e_2) \ldots e_n) |]$ $\eta$ $\kappa$ \newline
+\\
+$|[$(letrec $f~x~e'~e$)$|] \eta \kappa$ = $|[e|]~\eta[f \mapsto fix~F]~\kappa$ \\
+\hspace{1em}{gdzie:} \\
+\hspace{2em}{ $F~g~v~\kappa' = |[e'|] ~ \eta[f \mapsto g][x \mapsto v] ~ \kappa' $ } \\
 \end{frame}
 
 \begin{frame}{Cukier syntaktyczny}
