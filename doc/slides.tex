@@ -1,15 +1,14 @@
-\documentclass[12pt]{beamer}
+\documentclass[12pt,serif]{beamer}
 \usepackage[T1]{fontenc}
-\usepackage{concrete}
+\usepackage{pxfonts}
 \usepackage[utf8]{inputenc}
 \usepackage[MeX]{polski}
-\usepackage{minted}
-\usepackage{graphicx}
-
-\usetheme{Antibes}
-\usefonttheme{serif}
 \usecolortheme[RGB={20,80,150}]{structure} 
 \setbeamercovered{invisible}
+\usepackage{graphicx}
+
+\usepackage{semantic}
+\usepackage{syntax}
 
 \title{SPL-Scheme}
 \author{Piotr Krzemiński}
@@ -21,13 +20,8 @@
 \titlepage
 \end{frame}
 
-\begin{frame}
-\scriptsize \tableofcontents
-\end{frame}
 
-\section{Motywacja i cele}
-
-\begin{frame}
+\begin{frame}{Motywacja i cele}
 \begin{itemize}
   \item napisać trochę większy projekt w Haskellu (z~wykorzystaniem Cabala)
   \item zgłębić tajniki semantyki denotacyjnej, szczególnie w wersji CPS
@@ -36,9 +30,7 @@
 \end{itemize}
 \end{frame}
 
-
-\begin{frame}
-Dlaczego Scheme?
+\begin{frame}{Dlaczego Scheme?}
 \begin{itemize}
   \item niebardzo chcieliśmy skupiać się na pisaniu skomplikowanego
         parsera czy typecheckera
@@ -46,25 +38,21 @@ Dlaczego Scheme?
 \end{itemize}
 \end{frame}
 
-
-\begin{frame}
-Scheme jest ustandaryzowany
+\begin{frame}{Scheme jest ustandaryzowany}
 \begin{itemize}
   \item standard organizacji IEEE (The IEEE standard, 1178-1990 (R1995))
   \item raport $R^6RS$ (Revised6 Report on the Algorithmic Language Scheme)
 \end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}{Nasze podejście}
 \begin{center}
-Nasze podejście: zacząć od bardzo małego podzbioru, sukcesywnie dodając
+Zacząć od bardzo małego podzbioru, sukcesywnie dodając
 nowe konstrukcje do języka
 \end{center}
 \end{frame}
 
-\section{Stan obecny}
-
-\begin{frame}
+\begin{frame}{Stan obecny}
 \begin{itemize}
   \item parser (w Parsecu)
   \item konsola interaktywna (REPL)
@@ -78,8 +66,48 @@ nowe konstrukcje do języka
 \end{frame}
 
 
-\begin{frame}
-Szczegóły implementacyjne:
+\begin{frame}{Składnia}
+\setlength{\grammarindent}{8em}
+\begin{grammar}
+<Exp> ::= $n$
+\alt \#t | \#f
+\alt atom
+\alt "string"
+\alt \textbf{(} <$ExpList$> \textbf{)}
+
+<ExpList> ::= $\epsilon$
+\alt <$Exp$> <$ExpList$>
+\end{grammar}
+\end{frame}
+
+\begin{frame}{Dziedzina wartości}
+
+\end{frame}
+
+\begin{frame}{Funkcja semantyczna}
+$|[ \cdot |]: Exp -> Env -> Cont -> Val*$
+\end{frame}
+
+\begin{frame}{Cukier syntaktyczny}
+$\mathcal{D} : Exp -> Exp$ \newline
+\\
+$\mathcal{D}|[$ true $|]$ = \#t \\
+$\mathcal{D}|[$ false $|]$ = \#f \newline
+\\
+$\mathcal{D}|[$ (if $b$ $e_0$ $e_1$ $|]$ =
+   (cond $\mathcal{D}|[ b |]$ $\mathcal{D}|[ e_0 |]$ $\mathcal{D}|[ e_1 |]$) \newline
+\\
+$\mathcal{D}|[$ (let $x$ $e'$ $e$) $|]$ =
+   ((lambda $x$ $\mathcal{D}|[e|]$) $\mathcal{D}|[e'|]$) \\
+$\mathcal{D}|[$ (let* (($x_1$ $e_1$) .. ($x_n$ $e_n$)) $e$ $|]$ = 
+   $\mathcal{D}|[$(let $x_1$ $e'_1$ (..(let $x_n$ $e'_n$ $e'$)..))$|]$ \\
+\hspace{1em}{gdzie:} \\
+\hspace{2em}{$ e' = \mathcal{D}|[ e |] $} \\
+\hspace{2em}{$ e'_i = \mathcal{D}|[ e_i |] $} \\
+\end{frame}
+
+
+\begin{frame}{Szczegóły implementacyjne}
 \begin{itemize}
   \item semantyka denotacyjna w stylu kontynuacyjnym
   \item bardzo prosty core-language, dużo cukru syntaktycznego
@@ -92,26 +120,20 @@ Szczegóły implementacyjne:
 \end{itemize}
 \end{frame}
 
-\section{Formalny opis języka}
-
-\subsection{AST}
-
-\subsection{Dziedzina wartości}
-
-\subsection{Odcukrzanie}
-
-\subsection{Semantyka denotacyjna (CPS)}
-
-\section{Demo}
-
 \begin{frame}
 \begin{center}
    \LARGE{Demo}
 \end{center}
 \end{frame}
 
-\section{Czego brakuje?}
-
+\begin{frame}{Czego brakuje?}
+\begin{itemize}
+   \item rekursja wzajemna
+   \item kontynuacje jako wartości pierwszego rzędu (call/cc)
+   \item pokaźniejszy zbiór przykładowych programów testowych
+   \item dokument z formalnym opisem semantyki
+\end{itemize}
+\end{frame}
 
 
 \end{document}
