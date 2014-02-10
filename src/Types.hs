@@ -8,33 +8,40 @@ data TypeDef repr = TypeDef {
   fromRepr :: repr -> Expr
 }
 
+typed :: TypeDef repr -> (repr -> Val) -> Cont
+typed t cont _ val =
+  case (toRepr t) val of
+    Just v -> cont v
+    Nothing -> TypeErr $ "Expected type `" ++ name t ++ "`, given " ++ show val
+
+
 numType :: TypeDef Int
-numType = TypeDef "num" exFun Num where
-  exFun (Num n) = Just n
-  exFun _ = Nothing
+numType = TypeDef "num" extract Num where
+  extract (Num n) = Just n
+  extract _ = Nothing
 
 boolType :: TypeDef Bool
-boolType = TypeDef "bool" exFun Bool where
-  exFun (Bool b) = Just b
-  exFun _ = Nothing
+boolType = TypeDef "bool" extract Bool where
+  extract (Bool b) = Just b
+  extract _ = Nothing
 
 atomType :: TypeDef String
-atomType = TypeDef "atom" exFun Atom where
-  exFun (Atom a) = Just a
-  exFun _ = Nothing
+atomType = TypeDef "atom" extract Atom where
+  extract (Atom a) = Just a
+  extract _ = Nothing
 
 strType :: TypeDef String
-strType = TypeDef "string" exFun Atom where
-  exFun (Str s) = Just s
-  exFun _ = Nothing
+strType = TypeDef "string" extract Atom where
+  extract (Str s) = Just s
+  extract _ = Nothing
 
 consType :: TypeDef [Expr]
-consType = TypeDef "cons" exFun List where
-  exFun (List ls@[Atom "cons", _, _]) = Just ls
-  exFun _ = Nothing
+consType = TypeDef "cons" extract List where
+  extract (List ls@[Atom "cons", _, _]) = Just ls
+  extract _ = Nothing
 
 cloType :: TypeDef (CloFun)
-cloType = TypeDef "closure" exFun consFun where
-  exFun (Clo fun) = Just fun
-  exFun _ = Nothing
+cloType = TypeDef "closure" extract consFun where
+  extract (Clo fun) = Just fun
+  extract _ = Nothing
   consFun = Clo

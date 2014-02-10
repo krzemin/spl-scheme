@@ -6,11 +6,6 @@ import Types
 import Data.Map hiding (foldl)
 import Data.Function (fix)
 
-typed :: TypeDef repr -> (repr -> Val) -> Cont
-typed t cont _ val =
-  case (toRepr t) val of
-    Just v -> cont v
-    Nothing -> TypeErr $ "Expected type `" ++ name t ++ "`, given " ++ show val
 
 evalExpr :: Expr -> Env -> Cont -> Val
 
