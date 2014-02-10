@@ -7,7 +7,8 @@ data Expr = Num Int
           | Atom String
           | Str String
           | List [Expr]
-          | Clo (Expr -> Cont -> Val Expr)
+          | Clo CloFun
+type CloFun = Expr -> Cont -> Val
 
 instance Eq Expr where
   Num n1 == Num n2 = n1 == n2
@@ -17,14 +18,8 @@ instance Eq Expr where
   List l1 == List l2 = l1 == l2
   _ == _ = False
 
-data Val expr = OK Env expr | Err String | TypeErr String
-type Cont = Env -> Expr -> Val Expr
-
-instance Monad Val where
-  return = OK [empty]
-  (OK _ expr) >>= cont = cont expr
-  (Err s) >>= _ = Err s
-  (TypeErr s) >>= _ = TypeErr s 
+data Val = OK Env Expr | Err String | TypeErr String
+type Cont = Env -> Expr -> Val
 
 type Env = [Map String Expr]
 

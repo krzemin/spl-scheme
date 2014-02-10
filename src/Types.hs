@@ -1,18 +1,12 @@
 module Types where
 
 import Expr
-import Data.Maybe
 
 data TypeDef repr = TypeDef {
   name :: String,
   toRepr :: Expr -> Maybe repr,
   fromRepr :: repr -> Expr
 }
-
-
-extractVal :: TypeDef repr -> Expr -> repr
-extractVal t e = fromJust $ (toRepr t) e
-
 
 numType :: TypeDef Int
 numType = TypeDef "num" exFun Num where
@@ -39,7 +33,7 @@ consType = TypeDef "cons" exFun List where
   exFun (List ls@[Atom "cons", _, _]) = Just ls
   exFun _ = Nothing
 
-cloType :: TypeDef (Expr -> Cont -> Val Expr)
+cloType :: TypeDef (CloFun)
 cloType = TypeDef "closure" exFun consFun where
   exFun (Clo fun) = Just fun
   exFun _ = Nothing

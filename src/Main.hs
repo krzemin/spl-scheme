@@ -136,7 +136,7 @@ interpretFile file = do
         TypeErr e -> putStrLn $ "Type error: " ++ e
   return ()
 
-interpretExpr :: Val Expr -> Expr -> Val Expr
+interpretExpr :: Val -> Expr -> Val
 interpretExpr (OK env _) expr = eval expr env
 interpretExpr v@(Err _) _ = v
 interpretExpr v@(TypeErr _) _ = v
