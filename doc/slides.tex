@@ -63,7 +63,6 @@ nowe konstrukcje do języka
   \item statycznie wiązane definicje zmiennych i funkcji
   \item rekursja
   \item konsola interaktywna (REPL)
-  \item obsługa modułów ładowanych z plików
   \item interpreter
 \end{itemize}
 \end{frame}
@@ -97,8 +96,8 @@ nowe konstrukcje do języka
 
 \begin{frame}{Dziedzina wartości}
 $Env = (Ide -> Val)^{*}$ \\
-$Cont = Env -> Val -> Val^{*}$ \\
-$Clo = Val -> Cont -> Val^{*}$ \\
+$Cont = Env -> Val -> Val^{\star}$ \\
+$Clo = Val -> Cont -> Val^{\star}$ \\
 $Val = Exp \cup Clo$ \\
 $Val^{\star} \approx ((Env \times Val)~+~(\{err\} \times \Sigma^{*})~+~(\{typerr\} \times \Sigma^{*}))_{\bot}$\newline
 \\
@@ -231,7 +230,7 @@ $|[(e_1~e_2~e_3 \ldots e_n)|] \eta \kappa$ =
 \\
 $|[$(letrec $f~x~e'~e$)$|] \eta \kappa$ = $|[e|]~\eta[f \mapsto fix~F]~\kappa$ \\
 \hspace{1em}{gdzie:} \\
-\hspace{2em}{ $F~g~v~\kappa' = |[e'|] ~ \eta[f \mapsto g][x \mapsto v] ~ \kappa' $ } \\
+\hspace{2em}{ $F~g~v~\kappa' = |[e'|] ~ \eta[f \mapsto (\iota_{clo} ~ g)][x \mapsto v] ~ \kappa' $ } \\
 \end{frame}
 
 \begin{frame}{Funkcja semantyczna}
@@ -298,8 +297,8 @@ $\mathcal{D}|[$ (defun ($f$ $x_1 \ldots x_n$) $e$) $|]$ = \\
 \begin{itemize}
    \item rekursja wzajemna
    \item kontynuacje jako wartości pierwszego rzędu (call/cc)
+   \item moduły ładowane z zewnętrznych plików
    \item uboga biblioteka standardowa
-   \item pokaźniejszy zbiór przykładowych programów testowych
    \item dokument z formalnym opisem semantyki
 \end{itemize}
 \end{frame}
@@ -307,7 +306,7 @@ $\mathcal{D}|[$ (defun ($f$ $x_1 \ldots x_n$) $e$) $|]$ = \\
 \begin{frame}{Materiały}
 \begin{itemize}
    \item Reynolds
-   \item Racket
+   \item Racket (REPL)
    \item Write yourself Scheme in 48 hours
    \item Notatki z SJP
 \end{itemize}
