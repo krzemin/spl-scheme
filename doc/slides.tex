@@ -123,17 +123,16 @@ $\iota_{clo} : Clo -> Val$ \\
 \footnotesize \begin{minted}[mathescape]{haskell}
 data TypeDef repr = TypeDef {
   name :: String,
-  toRepr :: Expr -> Maybe repr,
-  fromRepr :: repr -> Expr
+  toRepr :: Expr -> Maybe repr
 }
 
 numType :: TypeDef Int
-numType = TypeDef "num" extract Num where
+numType = TypeDef "num" extract where
   extract (Num n) = Just n
   extract _ = Nothing
 
 boolType :: TypeDef Bool
-boolType = TypeDef "bool" extract Bool where
+boolType = TypeDef "bool" extract where
   extract (Bool b) = Just b
   extract _ = Nothing
   
