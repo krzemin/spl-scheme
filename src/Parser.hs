@@ -49,7 +49,7 @@ parseExpr = do
 parseFileContent :: String -> Either String [Expr]
 parseFileContent input = case parse (many parseExpr) "" input of
         Left err -> Left (show err)
-        Right ast -> Right ast
+        Right exprs -> Right exprs
 
 parseScheme :: String -> Either String Expr
 parseScheme "" = Left "empty input"
