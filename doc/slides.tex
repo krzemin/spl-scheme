@@ -54,14 +54,15 @@ nowe konstrukcje do języka
 
 \begin{frame}{Stan obecny}
 \begin{itemize}
-  \item parser (w Parsecu)
-  \item konsola interaktywna (REPL)
-  \item ewaluacja wyrażeń arytmetycznych i logicznych
-  \item lambda-abstrakcja i aplikacja
-  \item lispowe struktury danych (cons, car, cdr, ...)
+  \item parser (w Parsecu), pretty printer
+  \item ewaluacja wyrażeń arytmetycznych, logicznych, sterujących
+  \item lambda-abstrakcja i aplikacja (również wieloargumentowa)
+  \item lispowe struktury danych (\texttt{cons}, \texttt{car}, \texttt{cdr}, \ldots)
   \item statycznie wiązane definicje zmiennych i funkcji
-  \item rekursja (nawet wzajemna!)
-  \item obsługa modułów ładowanych z zewnętrznych plików
+  \item rekursja
+  \item konsola interaktywna (REPL)
+  \item obsługa modułów ładowanych z plików
+  \item interpreter
 \end{itemize}
 \end{frame}
 
@@ -99,11 +100,23 @@ $\mathcal{D}|[$ (if $b$ $e_0$ $e_1$ $|]$ =
 \\
 $\mathcal{D}|[$ (let $x$ $e'$ $e$) $|]$ =
    ((lambda $x$ $\mathcal{D}|[e|]$) $\mathcal{D}|[e'|]$) \\
-$\mathcal{D}|[$ (let* (($x_1$ $e_1$) .. ($x_n$ $e_n$)) $e$ $|]$ = 
-   $\mathcal{D}|[$(let $x_1$ $e'_1$ (..(let $x_n$ $e'_n$ $e'$)..))$|]$ \\
-\hspace{1em}{gdzie:} \\
-\hspace{2em}{$ e' = \mathcal{D}|[ e |] $} \\
-\hspace{2em}{$ e'_i = \mathcal{D}|[ e_i |] $} \\
+$\mathcal{D}|[$ (let* (($x_1$ $e_1$) .. ($x_n$ $e_n$)) $e$) $|]$ = 
+   $\mathcal{D}|[$(let $x_1$ $e_1$ (..(let $x_n$ $e_n$ $e$)..))$|]$ \\
+\end{frame}
+
+\begin{frame}{Cukier syntaktyczny}
+$\mathcal{D} : Exp -> Exp$ \newline
+\\
+$\mathcal{D}|[$ nil $|]$ = (quote ()) \\
+$\mathcal{D}|[$ (nil? $e$) $|]$ = 
+   (equals? $\mathcal{D}|[$ nil $|]$ $\mathcal{D}|[$ e $|]$) \newline
+\\
+$\mathcal{D}|[$ (lambda ($x_1 \ldots x_n$) $e$) $|]$ = \\
+\hspace{2em}{$\mathcal{D}|[$(lambda $x_1$ (\ldots(lambda $x_n$ $\mathcal{D}|[e|]$)\ldots))$|]$}\newline
+\\
+$\mathcal{D}|[$ (defun ($f$ $x_1 \ldots x_n$) $e$) $|]$ = \\ 
+\hspace{2em}{(define $f$ $\mathcal{D}|[$ (lambda ($x_1 \ldots x_n$) $e$ ) $|]$ )}\\
+
 \end{frame}
 
 
