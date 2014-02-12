@@ -220,3 +220,4 @@ test_type_errors = do
 test_callcc :: Assertion
 test_callcc = do
   "(call/cc (lambda k (+ 2 (throw k (* 3 4)))))" `evalsTo` "12"
+  "(let f (call/cc (lambda (k x) (throw k (lambda y (+ x y))))) (f 8))" `evalsTo` "16"
