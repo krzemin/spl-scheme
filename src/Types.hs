@@ -42,3 +42,8 @@ cloType :: TypeDef (CloFun)
 cloType = TypeDef "closure" extract where
   extract (Clo fun) = Just fun
   extract _ = Nothing
+
+conType :: TypeDef (Cont)
+conType = TypeDef "continuation" extract where
+  extract (Con cont) = Just cont
+  extract _ = Nothing

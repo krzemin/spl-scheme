@@ -8,7 +8,16 @@ data Expr = Num Int
           | Str String
           | List [Expr]
           | Clo CloFun
+          | Con Cont
+
+data Val = OK Env Expr | Err String | TypeErr String
+
 type CloFun = Expr -> Cont -> Val
+type Cont = Env -> Expr -> Val
+type Env = [Map String Expr]
+
+initEnv :: Env
+initEnv = [empty]
 
 instance Eq Expr where
   Num n1 == Num n2 = n1 == n2
@@ -17,14 +26,6 @@ instance Eq Expr where
   Str s1 == Str s2 = s1 == s2
   List l1 == List l2 = l1 == l2
   _ == _ = False
-
-data Val = OK Env Expr | Err String | TypeErr String
-type Cont = Env -> Expr -> Val
-
-type Env = [Map String Expr]
-
-initEnv :: Env
-initEnv = [empty]
 
 instance Show Expr where
   show (Num n) = show n

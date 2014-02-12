@@ -133,7 +133,13 @@ evalList [Atom "letrec*", List defs, e] env k
           ) iDefs 
       )
     
+evalList [Atom "call/cc", e] env k =
+  evalExpr e env $ typed cloType $ \f ->
+  f (Con k) k
 
+evalList [Atom "throw", e, e'] env k =
+  evalExpr e env $ typed conType $ \k' ->
+  evalExpr e' env k'
 
 evalList [Atom "lambda", Atom x, e] env@(m:ms) k = k env $ Clo f
   where

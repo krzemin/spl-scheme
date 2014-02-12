@@ -215,3 +215,6 @@ test_type_errors = do
   "(car 10)" `evalsToTypeErr` "Expected type `cons`, given 10"
   "(cdr 10)" `evalsToTypeErr` "Expected type `cons`, given 10"
 
+test_callcc :: Assertion
+test_callcc = do
+  "(call/cc (lambda k (+ 2 (throw k (* 3 4)))))" `evalsTo` "12"
