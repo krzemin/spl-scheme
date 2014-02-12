@@ -159,6 +159,8 @@ test_blocks_define = do
   "(begin (define x 10))" `evalsTo` "10"
   "(begin (define x 10) (+ x 3))" `evalsTo` "13"
   "(begin (define x 10) (define y (+ x 30)) (+ x y))" `evalsTo` "50"
+  "((begin (defun (f x) x) (defun (g x) (* x (f x)))) 7)" `evalsTo` "49"
+  "(begin (defun (f x) x) (define y (f 6)) y)" `evalsTo` "6"
   "(begin (define x 1) (define x 2))" `evalsToErr` "Name x was already defined in current scope."
 
 test_lambda :: Assertion

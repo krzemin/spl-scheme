@@ -93,11 +93,11 @@ evalList [Atom "cdr", e] env k =
 
 evalList [Atom "quote", e] env k = k env e
 
-evalList [Atom "define", Atom x, e] env@(m:_) k
+evalList [Atom "define", Atom x, e] env@(m:ms) k
   | M.member x m = Err $ "Name " ++ x ++ " was already defined in current scope."
   | otherwise =
-      evalExpr e env $ \(m':ms') v ->
-      k (M.insert x v m' : ms') v
+      evalExpr e env $ \_ v ->
+      k (M.insert x v m : ms) v
 
 evalList (Atom "begin" : e : es) env k = evalBlock (e:es) (M.empty : env)
   where
