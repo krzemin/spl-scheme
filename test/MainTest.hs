@@ -188,6 +188,20 @@ test_letrec = do
   "(letrec f n (cond (= 0 n) 1 (* n (f (- n 1)))) (f 5))" `evalsTo` "120"
   "(letrec f n (cond (< n 2) n (+ (f (- n 1)) (f (- n 2)))) (f 8))" `evalsTo` "21"
 
+test_letrec_poly :: Assertion
+test_letrec_poly = do
+  "(letrec* () 0)" `evalsToErr` "Bad letrec* bindings."
+  "(letrec* ((f f 0)) (f 1))" `evalsToErr` "Bad letrec* bindings."
+  "(letrec* ((f x (if (= 0 x) 1 (* x (f (- x 1)))))) (f 6))" `evalsTo` "720"
+  let oddeven prog = "(letrec* (\
+    \(odd x (if (= x 0) #f (even (- x 1))))\
+    \(even x (if (= x 0) #t (odd (- x 1))))\
+  \) " ++ prog ++ ")"
+  oddeven "(even 6)" `evalsTo` "#t"
+  oddeven "(even 5)" `evalsTo` "#f"
+  oddeven "(odd 6)" `evalsTo` "#f"
+  oddeven "(odd 5)" `evalsTo` "#t"
+
 test_defun :: Assertion
 test_defun = do
   "(begin (defun (f x) (+ x 2)) (f 10))" `evalsTo` "12"

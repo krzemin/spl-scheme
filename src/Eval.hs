@@ -3,9 +3,11 @@ module Eval where
 import Prelude hiding (lookup)
 import Expr
 import Types
-import Data.Map hiding (foldl)
+import qualified Data.Map as M
 import Data.Function (fix)
+import Data.Maybe
 
+import Debug.Trace
 
 evalExpr :: Expr -> Env -> Cont -> Val
 
@@ -17,7 +19,7 @@ evalExpr (Atom x) env k = case lookupEnv env of
   Nothing -> Err $ "Name `" ++ x ++ "` was not bound in current scope."
   where
     lookupEnv [] = Nothing
-    lookupEnv (m:ms) = case lookup x m of
+    lookupEnv (m:ms) = case M.lookup x m of
       Just v -> Just v
       Nothing -> lookupEnv ms
 
@@ -92,12 +94,12 @@ evalList [Atom "cdr", e] env k =
 evalList [Atom "quote", e] env k = k env e
 
 evalList [Atom "define", Atom x, e] env@(m:_) k
-  | member x m = Err $ "Name " ++ x ++ " was already defined in current scope."
+  | M.member x m = Err $ "Name " ++ x ++ " was already defined in current scope."
   | otherwise =
       evalExpr e env $ \(m':ms') v ->
-      k (insert x v m' : ms') v
+      k (M.insert x v m' : ms') v
 
-evalList (Atom "begin" : e : es) env k = evalBlock (e:es) (empty : env)
+evalList (Atom "begin" : e : es) env k = evalBlock (e:es) (M.empty : env)
   where
     evalBlock [e'] env' =
       evalExpr e' env' $ \(_:ms) v ->
@@ -107,13 +109,35 @@ evalList (Atom "begin" : e : es) env k = evalBlock (e:es) (empty : env)
     evalBlock [] _ = undefined -- not valid expression
 
 evalList [Atom "letrec", Atom f, Atom x, e0, e] (m:ms) k =
-  evalExpr e (insert f (Clo fun) m : ms) k
+  evalExpr e (M.insert f (Clo fun) m : ms) k
   where
-    fun = fix (\g v k' -> evalExpr e0 (insert x v (insert f (Clo g) m) : ms) k')
+    fun = fix (\g v k' -> evalExpr e0 (M.insert x v (M.insert f (Clo g) m) : ms) k')
+
+evalList [Atom "letrec*", List defs, e] env k
+  | goodDefs = evalExpr e (m' : env) (\(_ : env') v -> k env' v)
+  | otherwise = Err "Bad letrec* bindings."
+  where
+    m' = M.fromList $ makeEnv fixPoints
+    goodDefs = (defs /= []) && (not $ any ((==) Nothing) $ interpDefs)
+    makeEnv fs = zip fnames $ map Clo fs
+    fnames = map (\(f, _, _) -> f) $ iDefs
+    iDefs = catMaybes interpDefs
+    interpDefs = map interpDef defs
+    interpDef (List [Atom f, Atom x, e]) | f /= x = Just (f, x, e)
+    interpDef _ = Nothing
+    fixPoints = fix (\gs ->
+        map (\(_, x, e') -> 
+            \v k' ->
+              let m'' = M.fromList $ (x, v) : makeEnv gs
+              in evalExpr e' (m'' : env) k'
+          ) iDefs 
+      )
+    
+
 
 evalList [Atom "lambda", Atom x, e] env@(m:ms) k = k env $ Clo f
   where
-    f v k' = evalExpr e (insert x v m : ms) k'
+    f v k' = evalExpr e (M.insert x v m : ms) k'
 
 evalList [e0, e1] env k =
   evalExpr e0 env $ typed cloType $ \f ->
@@ -131,4 +155,4 @@ eval :: Expr -> Env -> Val
 eval e env = evalExpr e env OK
 
 eval0 :: Expr -> Val
-eval0 e = eval e [empty]
+eval0 e = eval e [M.empty]
