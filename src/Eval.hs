@@ -7,8 +7,6 @@ import qualified Data.Map as M
 import Data.Function (fix)
 import Data.Maybe
 
-import Debug.Trace
-
 evalExpr :: Expr -> Env -> Cont -> Val
 
 evalExpr (Num n) env k = k env $ Num n
@@ -108,21 +106,23 @@ evalList (Atom "begin" : e : es) env k = evalBlock (e:es) (M.empty : env)
       evalExpr e' env' $ \env'' _ -> evalBlock es' env''
     evalBlock [] _ = undefined -- not valid expression
 
-evalList [Atom "letrec", Atom f, Atom x, e0, e] (m:ms) k =
-  evalExpr e (M.insert f (Clo fun) m : ms) k
+evalList [Atom "letrec", Atom f, Atom x, e0, e] env k =
+  evalExpr e (M.fromList [(f, Clo fixpoint)] : env) (\(_ : env') v -> k env' v)
   where
-    fun = fix (\g v k' -> evalExpr e0 (M.insert x v (M.insert f (Clo g) m) : ms) k')
+    fixpoint = fix (\g v k' ->
+        evalExpr e0 (M.fromList [(x, v), (f, Clo g)] : env) k'
+      )
 
 evalList [Atom "letrec*", List defs, e] env k
   | goodDefs = evalExpr e (m' : env) (\(_ : env') v -> k env' v)
   | otherwise = Err "Bad letrec* bindings."
   where
     m' = M.fromList $ makeEnv fixPoints
-    goodDefs = (defs /= []) && (not $ any ((==) Nothing) $ interpDefs)
+    goodDefs = (defs /= []) && (not $ any ((==) Nothing) $ interpetedDefs)
     makeEnv fs = zip fnames $ map Clo fs
-    fnames = map (\(f, _, _) -> f) $ iDefs
-    iDefs = catMaybes interpDefs
-    interpDefs = map interpDef defs
+    fnames = map (\(f, _, _) -> f) $ defs'
+    defs' = catMaybes interpetedDefs
+    interpetedDefs = map interpDef defs
     interpDef (List [Atom f, Atom x, e]) | f /= x = Just (f, x, e)
     interpDef _ = Nothing
     fixPoints = fix (\gs ->
@@ -130,7 +130,7 @@ evalList [Atom "letrec*", List defs, e] env k
             \v k' ->
               let m'' = M.fromList $ (x, v) : makeEnv gs
               in evalExpr e' (m'' : env) k'
-          ) iDefs 
+          ) defs' 
       )
     
 evalList [Atom "call/cc", e] env k =
