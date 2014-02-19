@@ -13,7 +13,7 @@ import  Test.Framework.TestTypes (Assertion)
 evalsTo :: String -> String -> Assertion
 evalsTo inTxt outTxt = let
   (Right parsed) = parseScheme inTxt
-  (OK _ evalOut) = eval0 $ desugar parsed
+  (OK (_, evalOut)) = eval0 $ desugar parsed
   in assertEqual outTxt $ show evalOut
 
 evalsToErr :: String -> String -> Assertion
@@ -34,6 +34,7 @@ evalsToTypeErr inTxt outMsg = let
 test_simple_eval_arith :: Assertion
 test_simple_eval_arith = do
   "10" `evalsTo` "10"
+  "(- 20)" `evalsTo` "-20"
   "(+ 10 20)" `evalsTo` "30"
   "(* 2 3)" `evalsTo` "6"
   "(- 8 3)" `evalsTo` "5"

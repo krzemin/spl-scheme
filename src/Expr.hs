@@ -10,10 +10,10 @@ data Expr = Num Int
           | Clo CloFun
           | Con Cont
 
-data Val = OK Env Expr | Err String | TypeErr String
+data Val = OK (Env, Expr) | Err String | TypeErr String
 
 type CloFun = Expr -> Cont -> Val
-type Cont = Env -> Expr -> Val
+type Cont = (Env, Expr) -> Val
 type Env = [Map String Expr]
 
 initEnv :: Env
@@ -47,4 +47,5 @@ instance Show Expr where
   show (List []) = "'()"
   show (List (x:xs)) = foldl (\acc y -> acc ++ ' ' : show y) ("'(" ++ show x) xs ++ ")"
   show (Clo _) = "#closure"
+  show (Con _) = "#continuation"
  

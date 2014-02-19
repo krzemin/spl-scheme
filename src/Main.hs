@@ -113,7 +113,7 @@ processEval line env = do
   case parseScheme line of
     Right expr -> do
       case eval (desugar expr) env of
-        OK env' e -> do { print e; repl env' }
+        OK (env', e) -> do { print e; repl env' }
         Err s -> do { putStrLn $ "Runtime error: " ++ s; repl env }
         TypeErr s -> do { putStrLn $ "Type error: " ++ s; repl env }
     Left e -> do { putStrLn $ "Parse error: " ++ e; repl env }
@@ -129,15 +129,15 @@ interpretFile file = do
     Right exprs -> do
       exprs' <- expandModules exprs
       let exprs'' = map desugar exprs'
-      let val = foldl interpretExpr (OK [empty] (List [])) exprs''
+      let val = foldl interpretExpr (OK ([empty], List [])) exprs''
       case val of
-        OK _ expr -> print expr
+        OK (_, expr) -> print expr
         Err e -> putStrLn $ "Runtime error: " ++ e
         TypeErr e -> putStrLn $ "Type error: " ++ e
   return ()
 
 interpretExpr :: Val -> Expr -> Val
-interpretExpr (OK env _) expr = eval expr env
+interpretExpr (OK (env, _)) expr = eval expr env
 interpretExpr v@(Err _) _ = v
 interpretExpr v@(TypeErr _) _ = v
 
