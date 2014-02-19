@@ -8,6 +8,7 @@
 \usepackage{graphicx}
 
 
+\usepackage{ulem}
 \usepackage{minted}
 \usepackage{semantic}
 \usepackage{syntax}
@@ -60,7 +61,8 @@ nowe konstrukcje do języka
   \item lambda-abstrakcja i aplikacja (również wieloargumentowa)
   \item lispowe struktury danych (\texttt{cons}, \texttt{car}, \texttt{cdr}, \ldots)
   \item statycznie wiązane definicje zmiennych i funkcji
-  \item rekursja
+  \item rekursja \textcolor{red}{(również wzajemna)}
+  \item \textcolor{red}{kontynuacje jako wartości pierwszego rzędu, call/cc}
   \item konsola interaktywna (REPL)
   \item interpreter
 \end{itemize}
@@ -90,16 +92,16 @@ nowe konstrukcje do języka
 
 \begin{frame}{Dziedzina wartości}
 $Env = (Ide -> Val)^{*}$ \\
-$Cont = Env -> Val -> Val^{\star}$ \\
+\textcolor{red}{$Cont = Env \times Val -> Val^{\star}$} \\
 $Clo = Val -> Cont -> Val^{\star}$ \\
-$Val = Exp \cup Clo$ \\
+\textcolor{red}{$Val = Exp \cup Clo \cup Cont$} \\
 $Val^{\star} \approx ((Env \times Val)~+~(\{err\} \times \Sigma^{*})~+~(\{typerr\} \times \Sigma^{*}))_{\bot}$\newline
 \\
 \pause
 W implementacji:
 \begin{itemize}
   \item $Val = Exp$
-  \item $Exp~::=~\ldots~|~Clo$
+  \item \textcolor{red}{$Exp~::=~\ldots~|~Clo~|~Cont$}
 \end{itemize}
 \end{frame}
 
@@ -111,6 +113,7 @@ $\iota_{str} : Exp -> Val$ \\
 $\iota_{list} : Exp^{*} -> Val$ \\
 $\iota_{cons} : Val \times Val -> Val$ \\
 $\iota_{clo} : Clo -> Val$ \\
+\textcolor{red}{$\iota_{cont} : Cont -> Val$} \\
 \end{frame}
 
 \begin{frame}[fragile]{Dynamiczne typowanie}
@@ -191,6 +194,8 @@ Podobnie dla pozostałych operatorów (and, or, =, <, $\leq$, ...)
 \begin{frame}{Semantyka}
 $|[ \cdot |]: Exp -> Env -> Cont -> Val^{\star}$ \newline
 \\
+\textcolor{red}{$|[$(- $e$)$|] \eta \kappa$ =
+  $|[e|]$ $\eta$ ($\lambda \eta' n$ . $\kappa$ $\eta$ $(\iota_{num} (-n)))_{num^{*}}$} \\
 $|[$(not $e$)$|] \eta \kappa$ =
   $|[e|]$ $\eta$ ($\lambda \eta' b$ . $\kappa$ $\eta$ $(\iota_{bool} (\neg b)))_{bool^{*}}$ \\
 $|[$(cond $e$ $e_0$ $e_1$)$|] \eta \kappa$ = \\
@@ -228,6 +233,24 @@ $|[(e_1~e_2~e_3 \ldots e_n)|] \eta \kappa$ =
 $|[$(letrec $f~x~e'~e$)$|] \eta \kappa$ = $|[e|]~\eta[f \mapsto (\iota_{clo}~(fix~F))]~\kappa$ \\
 \hspace{1em}{gdzie:} \\
 \hspace{2em}{ $F~g~v~\kappa' = |[e'|] ~ \eta[f \mapsto (\iota_{clo} ~ g)][x \mapsto v] ~ \kappa' $ } \\
+\end{frame}
+
+\begin{frame}{Semantyka}
+\color{red}
+$|[$(letrec $((f_1~x_1~e_1) \ldots (f_n~x_n~e_n)) ~e$)$|] \eta \kappa$ = \\
+\hspace{1em}$|[e|]~ (push ~ \eta_F ~ \eta)~(\lambda \eta' v ~ . ~ \kappa ~ (pop ~\eta') ~ v)$ \\
+\hspace{2em}{gdzie:} \\
+\hspace{3em}{ $\eta_F$ = ??? } \newline
+\\
+$|[$(call/cc $e$)$|] \eta \kappa$ =
+  $|[e|] ~ \eta ~ $($\lambda \eta_0 f$ .
+  $~ f ~ (\iota_{cont}~{\kappa}) ~ \kappa))_{clo^{*}}$ \newline
+\\
+$|[$(throw $e$ $e'$)$|] \eta \kappa$ =
+  $|[e|] ~ \eta ~ $($\lambda \eta_0 \kappa'$ .
+  $~ |[e'|] ~ \eta \kappa'))_{cont^{*}}$ \newline
+
+
 \end{frame}
 
 \begin{frame}{Semantyka}
@@ -296,12 +319,12 @@ $\mathcal{D}|[~e~|]$ = $e$
 
 \begin{frame}{Czego brakuje?}
 \begin{itemize}
-   \item rekursja wzajemna (letrec*)
-   \item kontynuacje jako wartości pierwszego rzędu (call/cc)
+   \item \textcolor{red}{\sout{rekursja wzajemna (letrec*)}}
+   \item \textcolor{red}{\sout{kontynuacje jako wartości pierwszego rzędu (call/cc)}}
    \item moduły ładowane z zewnętrznych plików
    \item system makr
    \item uboga biblioteka standardowa
-   \item dokument z formalnym opisem semantyki
+   \item \textcolor{red}{\sout{dokument z formalnym opisem semantyki}}
 \end{itemize}
 \end{frame}
 
