@@ -8,7 +8,7 @@ data TypeDef repr = TypeDef {
 }
 
 typed :: TypeDef repr -> (repr -> Val) -> Cont
-typed t cont _ val =
+typed t cont (_, val) =
   case (toRepr t) val of
     Just v -> cont v
     Nothing -> TypeErr $ "Expected type `" ++ name t ++ "`, given " ++ show val
