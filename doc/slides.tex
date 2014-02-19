@@ -160,15 +160,15 @@ evalExpr (List [Atom "+", e0, e1]) env k =
 \begin{frame}{Semantyka}
 $|[ \cdot |]: Exp -> Env -> Cont -> Val^{\star}$ \newline
 \\
-$|[n|] \eta \kappa$ = $\kappa$ $\eta$ $(\iota_{num}~n)$ \\
-$|[b|] \eta \kappa$ = $\kappa$ $\eta$ $(\iota_{bool}$ $b$ $)$ \\
-$|[x|] \eta \kappa$ = $\kappa$ $\eta$ $(\eta~x)$ \\
-$|[s|] \eta \kappa$ = $\kappa$ $\eta$ $(\iota_{str}$ $s$ $)$ \newline
+$|[n|] \eta \kappa$ = $\kappa$ <$\eta$, $(\iota_{num}~n)$> \\
+$|[b|] \eta \kappa$ = $\kappa$ <$\eta$, $(\iota_{bool}$ $b$ $)$> \\
+$|[x|] \eta \kappa$ = $\kappa$ <$\eta$, $(\eta~x)$> \\
+$|[s|] \eta \kappa$ = $\kappa$ <$\eta$, $(\iota_{str}$ $s$ $)$> \newline
 \\
 $|[(\oplus~e_0~e_1)|] \eta \kappa$ = \\
-\hspace{1em}{$|[e_0|]$ $\eta$ ($\lambda \eta_0 n_0$ .} \\
-\hspace{2em}{$|[e_1|]$ $\eta$ ($\lambda \eta_1 n_1$ .} \\
-\hspace{3em}{$\kappa$ $\eta$ ($\iota_{num}$ ($n_0 \oplus n_1)$)} \\
+\hspace{1em}{$|[e_0|]$ $\eta$ ($\lambda$ <$\eta_0, n_0$> .} \\
+\hspace{2em}{$|[e_1|]$ $\eta$ ($\lambda$ <$\eta_1, n_1$> .} \\
+\hspace{3em}{$\kappa$ <$\eta$, ($\iota_{num}$ ($n_0 \oplus n_1)$)>} \\
 \hspace{2em}{$)_{num^{*}}$} \\
 \hspace{1em}{$)_{num^{*}}$} \newline
 \\
@@ -179,9 +179,12 @@ $\oplus \in \{+,-,*\}$
 $|[ \cdot |]: Exp -> Env -> Cont -> Val^{\star}$ \newline
 \\
 $|[(\oslash~e_0~e_1)|] \eta \kappa$ = \\
-\hspace{1em}{$|[e_0|]$ $\eta$ ($\lambda \eta_0 n_0$ .} \\
-\hspace{2em}{$|[e_1|]$ $\eta$ ($\lambda \eta_1 n_1$ .} \\
-\hspace{3em}{cond($n_1=0$, <err,"div. by 0">, $\kappa$ $\eta$ ($\iota_{num}$ ($n_0 \oslash n_1)$))} \\
+\hspace{1em}{$|[e_0|]$ $\eta$ ($\lambda$ <$\eta_0, n_0$> .} \\
+\hspace{2em}{$|[e_1|]$ $\eta$ ($\lambda$ <$\eta_1, n_1$> .} \\
+\hspace{3em}{cond($n_1=0$,} \\
+\hspace{5.5em}{<err,"div. by 0">,} \\
+\hspace{5.5em}{$\kappa$ <$\eta$, ($\iota_{num}$ ($n_0 \oslash n_1)$)>} \\
+\hspace{3em}{)} \\
 \hspace{2em}{$)_{num^{*}}$} \\
 \hspace{1em}{$)_{num^{*}}$} \newline
 \\
@@ -195,37 +198,37 @@ Podobnie dla pozostałych operatorów (and, or, =, <, $\leq$, ...)
 $|[ \cdot |]: Exp -> Env -> Cont -> Val^{\star}$ \newline
 \\
 \textcolor{red}{$|[$(- $e$)$|] \eta \kappa$ =
-  $|[e|]$ $\eta$ ($\lambda \eta' n$ . $\kappa$ $\eta$ $(\iota_{num} (-n)))_{num^{*}}$} \\
+  $|[e|]$ $\eta$ ($\lambda$ <$\eta', n$> . $\kappa$ <$\eta$, $(\iota_{num} (-n))$>$)_{num^{*}}$} \\
 $|[$(not $e$)$|] \eta \kappa$ =
-  $|[e|]$ $\eta$ ($\lambda \eta' b$ . $\kappa$ $\eta$ $(\iota_{bool} (\neg b)))_{bool^{*}}$ \\
+  $|[e|]$ $\eta$ ($\lambda$ <$\eta', b$> . $\kappa$ <$\eta$ $(\iota_{bool} (\neg b))$>$)_{bool^{*}}$ \\
 $|[$(cond $e$ $e_0$ $e_1$)$|] \eta \kappa$ = \\
-\hspace{1em}{$|[e|]$ $\eta$ ($\lambda \eta' b$ . cond(b, $|[e_0|] \eta \kappa$, $|[e_1|] \eta \kappa$) $)_{bool^{*}}$} \newline
+\hspace{1em}{$|[e|]$ $\eta$ ($\lambda$<$\eta', b$> . cond(b, $|[e_0|] \eta \kappa$, $|[e_1|] \eta \kappa$) $)_{bool^{*}}$} \newline
 \\
 $|[$(cons $e_0~e_1$)$|] \eta \kappa$ = \\
-\hspace{1em}{$|[e_0|]$ $\eta$ ($\lambda \eta_0 v_0$ .} \\
-\hspace{2em}{$|[e_1|]$ $\eta$ ($\lambda \eta_1 v_1$ .} \\
-\hspace{3em}{$\kappa$ $\eta$ ($\iota_{cons}$ <$v_0, v_1$>)} \\
+\hspace{1em}{$|[e_0|]$ $\eta$ ($\lambda$ <$\eta_0, v_0$> .} \\
+\hspace{2em}{$|[e_1|]$ $\eta$ ($\lambda$ <$\eta_1, v_1$> .} \\
+\hspace{3em}{$\kappa$ <$\eta$, ($\iota_{cons}$ <$v_0, v_1$>)>} \\
 \hspace{2em}{)} \\
 \hspace{1em}{)} \newline
 \\
 $|[$(car $e$)$|] \eta \kappa$ =
-  $|[e|]$ $\eta$ ($\lambda \eta' $<$v1, v2$> . $\kappa$ $\eta$ $v1)_{cons^{*}}$ \\
+  $|[e|]$ $\eta$ ($\lambda$ <$\eta', $<$v1, v2$> > . $\kappa$ <$\eta$, $v1$>$)_{cons^{*}}$ \\
 $|[$(cdr $e$)$|] \eta \kappa$ =
-  $|[e|]$ $\eta$ ($\lambda \eta' $<$v1, v2$> . $\kappa$ $\eta$ $v2)_{cons^{*}}$ \\
+  $|[e|]$ $\eta$ ($\lambda$ <$\eta', $<$v1, v2$> > . $\kappa$ <$\eta$, $v2$>$)_{cons^{*}}$ \\
 \end{frame}
 
 \begin{frame}{Semantyka}
 $|[ \cdot |]: Exp -> Env -> Cont -> Val^{\star}$ \newline
 \\
 $|[$(quote ($e_0 \ldots e_n$))$|] \eta \kappa$ =
-  $\kappa$ $\eta$ $(\iota_{list} (e_0 \cdots e_n)))$ \newline
+  $\kappa$ <$\eta$, $(\iota_{list} (e_0 \cdots e_n)))$> \newline
 \\
 $|[$(lambda $x$ $e$)$|] \eta \kappa$ =
-  $\kappa$ $\eta$ $(\iota_{clo} (\lambda v \kappa'~.~ |[e|]~\eta[x \mapsto v]~\kappa' ))$ \newline
+  $\kappa$ <$\eta$, $(\iota_{clo} (\lambda <v,\kappa'>. |[e|]\eta[x \mapsto v]\kappa' ))$> \newline
 \\
 $|[(e_0~e_1)|] \eta \kappa$ =
-  $|[e_0|]$ $\eta$ ($\lambda \eta_0 f$ .
-  $|[e_1|]$ $\eta$ ($\lambda \eta_1 v$ . $f~v~\kappa))_{clo^{*}}$ \newline
+  $|[e_0|]$ $\eta$ ($\lambda$ <$\eta_0, f$> .
+  $|[e_1|]$ $\eta$ ($\lambda$ <$\eta_1, v$> . $f~v~\kappa))_{clo^{*}}$ \newline
 \\
 $|[(e_1~e_2~e_3 \ldots e_n)|] \eta \kappa$ =
   $|[ (\ldots(e_1~e_2)~e_3) \ldots e_n) |]$ $\eta$ $\kappa$ \newline
@@ -238,16 +241,19 @@ $|[$(letrec $f~x~e'~e$)$|] \eta \kappa$ = $|[e|]~\eta[f \mapsto (\iota_{clo}~(fi
 \begin{frame}{Semantyka}
 \color{red}
 $|[$(letrec $((f_1~x_1~e_1) \ldots (f_n~x_n~e_n)) ~e$)$|] \eta \kappa$ = \\
-\hspace{1em}$|[e|]~ (push ~ \eta_F ~ \eta)~(\lambda \eta' v ~ . ~ \kappa ~ (pop ~\eta') ~ v)$ \\
-\hspace{2em}{gdzie:} \\
-\hspace{3em}{ $\eta_F$ = ??? } \newline
+\hspace{1em}$|[e|]~ (push ~ \eta_F ~ \eta)~(\lambda <\eta', v> ~ . ~ \kappa ~ (pop ~\eta') ~ v)$ \\
+\hspace{2em}{gdzie $\eta_F$ jest najmniejszym rozwiązaniem układu:} \\
+\hspace{3em}{ $\eta_F = empty[f_1 \mapsto (\iota_{clo}g_1) ]\ldots[f_n \mapsto (\iota_{clo}g_n) ]$ } \\
+\hspace{3em}{ $g_1 = \lambda v_1 \kappa_1 ~ . ~ |[ e_1 |] ~ \eta_F[x_1 \mapsto v_1] ~ \kappa_1 $ } \\
+\hspace{4.4em}{ \vdots } \\
+\hspace{3em}{ $g_n = \lambda v_n \kappa_n ~ . ~ |[ e_n |] ~ \eta_F[x_n \mapsto v_n] ~ \kappa_n $ } \newline
 \\
 $|[$(call/cc $e$)$|] \eta \kappa$ =
-  $|[e|] ~ \eta ~ $($\lambda \eta_0 f$ .
+  $|[e|] ~ \eta ~ $($\lambda$ <$\eta_0, f$> .
   $~ f ~ (\iota_{cont}~{\kappa}) ~ \kappa))_{clo^{*}}$ \newline
 \\
 $|[$(throw $e$ $e'$)$|] \eta \kappa$ =
-  $|[e|] ~ \eta ~ $($\lambda \eta_0 \kappa'$ .
+  $|[e|] ~ \eta ~ $($\lambda$ <$\eta_0, \kappa'$> .
   $~ |[e'|] ~ \eta \kappa'))_{cont^{*}}$ \newline
 
 
@@ -256,23 +262,23 @@ $|[$(throw $e$ $e'$)$|] \eta \kappa$ =
 \begin{frame}{Semantyka}
 $|[ \cdot |]: Exp -> Env -> Cont -> Val^{\star}$ \newline
 \\
-\[
+\footnotesize \[
  |[(\text{define}~x~e)|] \eta \kappa =
   \begin{cases}
    \text{<err, "x already bound">} & \text{jeśli } x \in dom(\eta) \\
-   |[e|] ~ \eta ~ (\lambda \eta' v ~. ~ \kappa ~ \eta'[x \mapsto v] ~ v) & \text{w p.p.}
+   |[e|] ~ \eta ~ (\lambda <\eta', v> . \kappa <\eta'[x \mapsto v], v>) & \text{w p.p.}
   \end{cases}
 \] \newline
 \\
-$|[$(begin $e_1 \ldots e_n)|] \eta \kappa$ =
+\normalsize $|[$(begin $e_1 \ldots e_n)|] \eta \kappa$ =
   $|[e_1 \ldots e_n|]_{block}$ $(push~empty~\eta)$ $\kappa$ \newline
 \\
 $|[ \cdot |]_{block}: Exp^{*} -> Env -> Cont -> Val^{\star}$ \newline
 \\
 $|[ e |]_{block} ~\eta \kappa$ =
-  $|[ e |] ~ \eta ~ (\lambda \eta' v ~ . ~ \kappa ~ (pop~\eta') ~ v)$ \\
+  $|[ e |] ~ \eta ~ (\lambda <\eta', v> ~ . ~ \kappa <(pop~\eta'), v>)$ \\
 $|[ e_1 ~ e_2 \ldots e_n |]_{block} ~\eta \kappa$ =
-  $|[ e_1 |] ~ \eta ~ (\lambda \eta' v ~ . ~ |[ e_2 \ldots e_n |]_{block} ~ \eta' \kappa )$ \\
+  $|[ e_1 |] ~ \eta ~ (\lambda <\eta', v> ~ . ~ |[ e_2 \ldots e_n |]_{block} ~ \eta' \kappa )$ \\
 \end{frame}
 
 
